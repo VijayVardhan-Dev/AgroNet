@@ -1,16 +1,7 @@
-import { useState } from 'react'
-
+import AppRouter from "./routing/AppRouter";
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <h1 className='text-4xl text-red-500 font-bold underline'>AgroNet</h1>
-      </div>
-    </>
-  )
+  return <AppRouter />;
 }
 
-export default App
+export default App;
