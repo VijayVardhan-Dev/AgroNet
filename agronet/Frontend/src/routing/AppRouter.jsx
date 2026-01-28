@@ -5,6 +5,8 @@ import ErrorBoundary from "../components/common/ErrorBoundary";
 import Loader from "../components/common/Loader";
 import { useAuth } from "../context/AuthContext";
 import { ROUTES } from "./routes";
+import Chat from "../pages/chat";
+import Voice from "../pages/voice";
 
 // Lazy Load Pages
 const LandingPage = lazy(() => import("../pages/LandingPage"));
@@ -89,11 +91,31 @@ const AppRouter = () => {
                 }
             />
             <Route
+                path={ROUTES.VOICE}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Voice />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path={ROUTES.MAPS}
                 element={
                     <ProtectedRoute>
                         <RouteWithLayout>
                             <Maps />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+             <Route
+                path={ROUTES.CHAT}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Chat />
                         </RouteWithLayout>
                     </ProtectedRoute>
                 }

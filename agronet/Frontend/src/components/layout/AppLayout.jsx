@@ -30,7 +30,7 @@ const AppLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const isActive = (path) => location.pathname === path;
-    const isRentalsPage = location.pathname === ROUTES.RENTALS;
+    const shouldHideHeader = location.pathname === ROUTES.RENTALS || location.pathname === ROUTES.MAPS;
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans text-gray-800 flex">
@@ -52,8 +52,8 @@ const AppLayout = ({ children }) => {
                         <SidebarItem to={ROUTES.HOME} icon={<HomeIcon size={20} />} label="Home" active={isActive(ROUTES.HOME)} />
                         <SidebarItem to={ROUTES.RENTALS} icon={<Key size={20} />} label="Rentals" active={isActive(ROUTES.RENTALS)} />
                         <SidebarItem to={ROUTES.MAPS} icon={<Map size={20} />} label="Maps" active={isActive(ROUTES.MAPS)} />
-                        <SidebarItem to="#" icon={<MessageSquare size={20} />} label="AI Assistant" />
-                        <SidebarItem to="#" icon={<Bell size={20} />} label="Notifications" />
+                        <SidebarItem to={ROUTES.CHAT} icon={<MessageSquare size={20} />} label="AI Assistant" active={isActive(ROUTES.CHAT)} />
+                        <SidebarItem to={ROUTES.VOICE} icon={<Bell size={20} />} label="Voice" active={isActive(ROUTES.VOICE)} />
                     </div>
 
                     <div className="pt-6 pb-2">
@@ -91,7 +91,7 @@ const AppLayout = ({ children }) => {
             <div className="flex-1 flex flex-col min-w-0">
 
                 {/* --- Mobile Header --- */}
-                {!isRentalsPage && (
+                {!shouldHideHeader && (
                     <header className="md:hidden flex justify-between items-center p-4 bg-white sticky top-0 z-20 transition-all shadow-sm">
                         <div className="w-8 h-8 flex items-center justify-center">
                             <img src={logo} alt="AgroNet" className="w-full h-full object-contain" />
@@ -116,7 +116,7 @@ const AppLayout = ({ children }) => {
                 )}
 
                 {/* --- Desktop Header --- */}
-                {!isRentalsPage && (
+                {!shouldHideHeader && (
                     <header className="hidden md:flex justify-between items-center px-8 py-5 bg-gray-50 sticky top-0 z-20">
                         <div className="flex-1 max-w-2xl">
                             <div className="relative">
@@ -145,7 +145,7 @@ const AppLayout = ({ children }) => {
                     <NavIcon to={ROUTES.HOME} icon={<HomeIcon size={24} />} active={isActive(ROUTES.HOME)} />
                     <NavIcon to={ROUTES.RENTALS} icon={<Key size={24} />} active={isActive(ROUTES.RENTALS)} />
                     <NavIcon to={ROUTES.MAPS} icon={<Map size={24} />} active={isActive(ROUTES.MAPS)} />
-                    <NavIcon to={ROUTES.SCHEMES} icon={<MessageSquare size={24} />} active={isActive(ROUTES.SCHEMES)} />
+                    <NavIcon to={ROUTES.CHAT} icon={<MessageSquare size={24} />} active={isActive(ROUTES.CHAT)} />
                 </nav>
             </div>
         </div>

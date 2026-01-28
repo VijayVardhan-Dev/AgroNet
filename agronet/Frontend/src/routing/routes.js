@@ -6,6 +6,8 @@ export const ROUTES = {
     REGISTER: "/auth/register",
     RENTALS: "/rentals",
     MAPS: "/maps",
+    CHAT: "/chat",
+    VOICE: "/voice",
     SCHEMES: "/schemes",
     PROFILE: "/profile",
 };
