@@ -30,6 +30,7 @@ const AppLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const isActive = (path) => location.pathname === path;
+    const isRentalsPage = location.pathname === ROUTES.RENTALS;
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans text-gray-800 flex">
@@ -90,45 +91,49 @@ const AppLayout = ({ children }) => {
             <div className="flex-1 flex flex-col min-w-0">
 
                 {/* --- Mobile Header --- */}
-                <header className="md:hidden flex justify-between items-center p-4 bg-white sticky top-0 z-20 transition-all shadow-sm">
-                    <div className="w-8 h-8 flex items-center justify-center">
-                        <img src={logo} alt="AgroNet" className="w-full h-full object-contain" />
-                    </div>
-                    <div className="flex gap-4 items-center">
-                        <ShoppingBag className="w-6 h-6 text-gray-600" />
-                        <div className="relative">
-                            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="focus:outline-none">
-                                <User className="w-6 h-6 text-gray-600" />
-                            </button>
-                            {isMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-50">
-                                    <Link to={ROUTES.PROFILE} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Profile</Link>
-                                    <button onClick={() => { logout(); setIsMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2">
-                                        <LogOut size={14} /> Logout
-                                    </button>
-                                </div>
-                            )}
+                {!isRentalsPage && (
+                    <header className="md:hidden flex justify-between items-center p-4 bg-white sticky top-0 z-20 transition-all shadow-sm">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            <img src={logo} alt="AgroNet" className="w-full h-full object-contain" />
                         </div>
-                    </div>
-                </header>
+                        <div className="flex gap-4 items-center">
+                            <ShoppingBag className="w-6 h-6 text-gray-600" />
+                            <div className="relative">
+                                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="focus:outline-none">
+                                    <User className="w-6 h-6 text-gray-600" />
+                                </button>
+                                {isMenuOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-50">
+                                        <Link to={ROUTES.PROFILE} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Profile</Link>
+                                        <button onClick={() => { logout(); setIsMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2">
+                                            <LogOut size={14} /> Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </header>
+                )}
 
                 {/* --- Desktop Header --- */}
-                <header className="hidden md:flex justify-between items-center px-8 py-5 bg-gray-50 sticky top-0 z-20">
-                    <div className="flex-1 max-w-2xl">
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="search"
-                                className="w-full bg-white border border-gray-200 py-2.5 pl-10 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-                            />
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                {!isRentalsPage && (
+                    <header className="hidden md:flex justify-between items-center px-8 py-5 bg-gray-50 sticky top-0 z-20">
+                        <div className="flex-1 max-w-2xl">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="search"
+                                    className="w-full bg-white border border-gray-200 py-2.5 pl-10 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                                />
+                                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-6 ml-4">
-                        <button className="text-gray-600 hover:text-green-700"><ShoppingBag size={22} /></button>
-                        <button className="text-gray-600 hover:text-green-700"><User size={22} /></button>
-                    </div>
-                </header>
+                        <div className="flex items-center gap-6 ml-4">
+                            <button className="text-gray-600 hover:text-green-700"><ShoppingBag size={22} /></button>
+                            <button className="text-gray-600 hover:text-green-700"><User size={22} /></button>
+                        </div>
+                    </header>
+                )}
 
                 {/* --- Main Content --- */}
                 <main className="flex-grow p-1 md:p-8 overflow-y-auto">

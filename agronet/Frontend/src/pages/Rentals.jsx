@@ -125,6 +125,19 @@ const Rentals = () => {
     return (
         <div className="bg-gray-50 min-h-screen font-sans pb-24">
 
+            {/* --- Search Bar --- */}
+            <div className="px-4 mb-6">
+                <div className="bg-gray-100 rounded-lg flex items-center px-4 py-3">
+                {/* Note: In the design, search text is a placeholder, no visible icon inside the bar, 
+                    but usually a search UI has one. Based on image, it's just text 'search' */}
+                <input 
+                    type="text" 
+                    placeholder="search" 
+                    className="bg-transparent w-full outline-none text-gray-600 placeholder-gray-300 text-sm"
+                />
+                </div>
+            </div>
+
             {/* --- Categories --- */}
             <div className="pl-4 mb-6">
                 <h2 className="text-lg font-semibold mb-3 text-gray-800">Categories</h2>
