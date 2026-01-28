@@ -23,10 +23,13 @@ class ErrorBoundary extends Component {
                     <p className="text-gray-600 mb-6">
                         We apologize for the inconvenience. Please try refreshing the page.
                     </p>
-                    <Button onClick={() => window.location.reload()}>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="bg-green-700 text-white px-6 py-2 rounded-lg hover:bg-green-800 transition-colors"
+                    >
                         Refresh Page
-                    </Button>
-                    {process.env.NODE_ENV === "development" && (
+                    </button>
+                    {import.meta.env.DEV && (
                         <pre className="mt-8 p-4 bg-red-50 text-red-800 rounded text-left overflow-auto max-w-2xl text-xs">
                             {this.state.error && this.state.error.toString()}
                         </pre>

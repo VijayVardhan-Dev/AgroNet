@@ -1,6 +1,7 @@
 // Public Routes
 export const ROUTES = {
-    HOME: "/",
+    LANDING: "/",
+    HOME: "/home",
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
     RENTALS: "/rentals",

@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
 const AuthContext = createContext();
 
@@ -6,21 +8,37 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    // Mock login state. Change to true to simulate logged in user.
     const [user, setUser] = useState(null);
-    const [loading] = useState(false); // Removed unused setLoading
+    const [loading, setLoading] = useState(true);
 
-    const login = (email) => {
-        setUser({ email, displayName: "Test User" });
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const signup = (email, password) => {
+        return createUserWithEmailAndPassword(auth, email, password);
+    };
+
+    const login = (email, password) => {
+        return signInWithEmailAndPassword(auth, email, password);
+    };
+
+    const googleSignIn = () => {
+        const provider = new GoogleAuthProvider();
+        return signInWithPopup(auth, provider);
     };
 
     const logout = () => {
-        setUser(null);
+        return signOut(auth);
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
-            {children}
+        <AuthContext.Provider value={{ user, loading, signup, login, googleSignIn, logout }}>
+            {!loading && children}
         </AuthContext.Provider>
     );
 };

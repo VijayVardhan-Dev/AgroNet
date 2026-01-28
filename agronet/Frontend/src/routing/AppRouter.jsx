@@ -1,14 +1,13 @@
 import { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
-
-import ErrorBoundary from "../components/common/ErrorBoundary"; // Restored import
-
+import ErrorBoundary from "../components/common/ErrorBoundary";
 import Loader from "../components/common/Loader";
 import { useAuth } from "../context/AuthContext";
 import { ROUTES } from "./routes";
 
 // Lazy Load Pages
+const LandingPage = lazy(() => import("../pages/LandingPage"));
 const Home = lazy(() => import("../pages/Home"));
 const Login = lazy(() => import("../pages/auth/Login"));
 const Register = lazy(() => import("../pages/auth/Register"));
@@ -35,7 +34,6 @@ const RouteWithLayout = ({ children }) => {
                     {children}
                 </Suspense>
             </ErrorBoundary>
-           
         </AppLayout>
     );
 };
@@ -43,7 +41,15 @@ const RouteWithLayout = ({ children }) => {
 const AppRouter = () => {
     return (
         <Routes>
-            {/* Public Routes - Auth pages typically don't share the main layout */}
+            {/* Public Routes */}
+            <Route
+                path={ROUTES.LANDING}
+                element={
+                    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader /></div>}>
+                        <LandingPage />
+                    </Suspense>
+                }
+            />
             <Route
                 path={ROUTES.LOGIN}
                 element={
@@ -61,41 +67,47 @@ const AppRouter = () => {
                 }
             />
 
-            {/* Feature Routes wrapped in Layout */}
+            {/* Protected Feature Routes wrapped in Layout */}
             <Route
                 path={ROUTES.HOME}
                 element={
-                    <RouteWithLayout>
-                        <Home />
-                    </RouteWithLayout>
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Home />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
                 }
             />
             <Route
                 path={ROUTES.RENTALS}
                 element={
-                    <RouteWithLayout>
-                        <Rentals />
-                    </RouteWithLayout>
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Rentals />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
                 }
             />
             <Route
                 path={ROUTES.MAPS}
                 element={
-                    <RouteWithLayout>
-                        <Maps />
-                    </RouteWithLayout>
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Maps />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
                 }
             />
             <Route
                 path={ROUTES.SCHEMES}
                 element={
-                    <RouteWithLayout>
-                        <Schemes />
-                    </RouteWithLayout>
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Schemes />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
                 }
             />
-
-            {/* Protected Routes */}
             <Route
                 path={ROUTES.PROFILE}
                 element={
@@ -107,14 +119,10 @@ const AppRouter = () => {
                 }
             />
 
-            {/* 404 Route */}
+            {/* 404 Route - Redirect to Login */}
             <Route
                 path="*"
-                element={
-                    <RouteWithLayout>
-                        <NotFound />
-                    </RouteWithLayout>
-                }
+                element={<Navigate to={ROUTES.LOGIN} replace />}
             />
         </Routes>
     );
