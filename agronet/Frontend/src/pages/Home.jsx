@@ -39,7 +39,7 @@ const Home = () => {
         {/* --- Weather & Govt Schemes Row --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* --- Weather Widget --- */}
-          <div>
+          <div className=''>
             <h2 className="font-semibold mb-3 text-sm text-gray-700">Weather</h2>
             <div className="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center h-full">
               {/* Current Weather */}
@@ -68,7 +68,7 @@ const Home = () => {
           </div>
 
           {/* --- Govt Schemes Banner --- */}
-          <div className='pt-10'>
+          <div className='mt-10 md:mt-0 '>
             <h2 className="font-semibold mb-3 text-sm text-gray-700">Govt schemes</h2>
             <div className="w-full h-28 md:h-full rounded-xl overflow-hidden shadow-sm relative group cursor-pointer">
               <img
@@ -110,7 +110,7 @@ const Home = () => {
         <div>
           <h2 className="font-semibold mb-3 text-sm text-gray-700">Categories</h2>
           <div className="bg-white p-6 rounded-2xl shadow-sm">
-            <div className="flex justify-between items-center gap-4 overflow-x-auto pb-2 no-scrollbar md:grid md:grid-cols-8 md:gap-0 lg:flex lg:justify-between">
+            <div className="grid grid-cols-4 gap-4 md:grid-cols-8 md:gap-0 lg:flex lg:justify-between">
               {[
                 { name: 'Roots', icon: root },
                 { name: 'Green', icon: leaf },
@@ -135,27 +135,31 @@ const Home = () => {
         {/* --- New Arrivals --- */}
         <div>
           <h2 className="font-semibold mb-3 text-sm text-gray-700">New arrivals</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
 
             {/* Card 1 */}
-            <ProductCard
-              image={rice}
-              title="Premium Quality Rice"
-              author="Krishna Murthy"
-              rating="4.2"
-              location="Kakinda, 5km"
-              price="25"
-            />
+            <div className="min-w-[280px] md:min-w-[320px]">
+              <ProductCard
+                image={rice}
+                title="Premium Quality Rice"
+                author="Krishna Murthy"
+                rating="4.2"
+                location="Kakinda, 5km"
+                price="25"
+              />
+            </div>
 
             {/* Card 2 */}
-            <ProductCard
-              image={rice}
-              title="Premium Quality Rice"
-              author="Krishna Murthy"
-              rating="4.2"
-              location="Kakinda, 5km"
-              price="25"
-            />
+            <div className="min-w-[280px] md:min-w-[320px]">
+              <ProductCard
+                image={rice}
+                title="Premium Quality Rice"
+                author="Krishna Murthy"
+                rating="4.2"
+                location="Kakinda, 5km"
+                price="25"
+              />
+            </div>
 
           </div>
         </div>

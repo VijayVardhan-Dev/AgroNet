@@ -131,7 +131,7 @@ const AppLayout = ({ children }) => {
                 </header>
 
                 {/* --- Main Content --- */}
-                <main className="flex-grow p-4 md:p-8 overflow-y-auto">
+                <main className="flex-grow p-1 md:p-8 overflow-y-auto">
                     {children}
                 </main>
 
