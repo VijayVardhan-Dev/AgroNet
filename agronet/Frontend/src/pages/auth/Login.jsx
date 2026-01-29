@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { ROUTES } from "../../routing/routes";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const Login = () => {
             setError("");
             setLoading(true);
             await login(email, password);
-            navigate("/");
+            navigate(ROUTES.HOME);
         } catch (err) {
             setError("Failed to sign in. " + err.message);
         } finally {
@@ -29,7 +30,7 @@ const Login = () => {
             setError("");
             setLoading(true);
             await googleSignIn();
-            navigate("/");
+            navigate(ROUTES.HOME);
         } catch (err) {
             setError("Failed to sign in with Google. " + err.message);
         } finally {
