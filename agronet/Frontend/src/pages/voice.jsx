@@ -1,258 +1,203 @@
-
-import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Volume2 } from 'lucide-react';
-
-const MODEL = "models/gemini-2.5-flash-native-audio-latest"; // Updated to valid available model
-const API_KEY = "AIzaSyD5A6dPNtYK_VMsd4V7Z590QbvM1r9778g"; // Replace with your key
-const WEBSOCKET_URL = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${API_KEY}`;
+import React, { useState, useRef } from 'react';
+import { Mic, MicOff, Volume2, Loader2, Play, Square } from 'lucide-react';
 
 const Voice = () => {
-    const [isConnected, setIsConnected] = useState(false);
-    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [statusMessage, setStatusMessage] = useState('');
 
-    // Refs to manage non-react state (sockets, audio context)
-    const socketRef = useRef(null);
-    const audioContextRef = useRef(null);
-    const mediaStreamRef = useRef(null);
-    const processorRef = useRef(null);
+    const mediaRecorderRef = useRef(null);
+    const chunksRef = useRef([]);
 
-    // --- 1. Audio Output (Text-to-Speech playback) ---
-    const playAudioChunk = (base64Audio) => {
-        if (!audioContextRef.current) return;
-
-        // Convert Base64 -> Binary -> Float32
-        const binaryString = window.atob(base64Audio);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-        }
-
-        // The API sends 16-bit PCM (Int16), usually at 24kHz
-        const int16Data = new Int16Array(bytes.buffer);
-        const float32Data = new Float32Array(int16Data.length);
-
-        // Convert Int16 to Float32 (Standard Web Audio format)
-        for (let i = 0; i < int16Data.length; i++) {
-            float32Data[i] = int16Data[i] / 32768.0;
-        }
-
-        // Queue the audio
-        const buffer = audioContextRef.current.createBuffer(1, float32Data.length, 24000);
-        buffer.getChannelData(0).set(float32Data);
-
-        const source = audioContextRef.current.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioContextRef.current.destination);
-        source.start();
-    };
-
-    // --- 2. Connection Logic ---
-    const connect = async () => {
-        // A. Init Audio Context
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-
-        // B. Connect WebSocket
-        const ws = new WebSocket(WEBSOCKET_URL);
-
-        ws.onopen = () => {
-            console.log("Connected to Gemini Live");
-            setIsConnected(true);
-
-            // Send Initial Setup Message
-            const setupMsg = {
-                setup: {
-                    model: MODEL,
-                    generation_config: { response_modalities: ["AUDIO"] }
-                }
-            };
-            ws.send(JSON.stringify(setupMsg));
-        };
-
-        ws.onmessage = async (event) => {
-            // Handle the Blob response (Audio/JSON mix)
-            const data = event.data;
-
-            if (data instanceof Blob) {
-                const text = await data.text();
-                try {
-                    const json = JSON.parse(text);
-                    // Verify if we have server audio content
-                    if (json.serverContent?.modelTurn?.parts?.[0]?.inlineData) {
-                        const audioData = json.serverContent.modelTurn.parts[0].inlineData.data;
-                        playAudioChunk(audioData);
-                    }
-                } catch (e) {
-                    console.error("Error parsing JSON", e);
-                }
-            }
-            // Sometimes it sends pure text JSON
-            else {
-                const json = JSON.parse(data);
-                // Handle audio here as well just in case format differs
-            }
-        };
-
-        ws.onerror = (err) => console.error("WebSocket Error:", err);
-        ws.onclose = (event) => {
-            console.log("WebSocket Closed", event.code, event.reason);
-            setIsConnected(false);
-        };
-
-        socketRef.current = ws;
-    };
-
-    // --- 3. Microphone Input Logic ---
+    // --- Audio Recording Logic ---
     const startRecording = async () => {
-        setIsSpeaking(true);
-
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    channelCount: 1,
-                    sampleRate: 16000
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            chunksRef.current = [];
+
+            mediaRecorderRef.current.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunksRef.current.push(e.data);
                 }
-            });
-            mediaStreamRef.current = stream;
-
-            const context = audioContextRef.current;
-
-            // Define AudioWorklet processor code
-            const workletCode = `
-        class PCMProcessor extends AudioWorkletProcessor {
-          process(inputs, outputs, parameters) {
-            const input = inputs[0];
-            if (input.length > 0) {
-              const float32Data = input[0];
-              const int16Data = new Int16Array(float32Data.length);
-              for (let i = 0; i < float32Data.length; i++) {
-                let s = Math.max(-1, Math.min(1, float32Data[i]));
-                int16Data[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-              }
-              this.port.postMessage(int16Data);
-            }
-            return true;
-          }
-        }
-        registerProcessor('pcm-processor', PCMProcessor);
-      `;
-
-            // Load Worklet
-            const blob = new Blob([workletCode], { type: 'application/javascript' });
-            const workletUrl = URL.createObjectURL(blob);
-            await context.audioWorklet.addModule(workletUrl);
-
-            const source = context.createMediaStreamSource(stream);
-            const processor = new AudioWorkletNode(context, 'pcm-processor');
-
-            processor.port.onmessage = (e) => {
-                if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
-
-                const pcmData = e.data;
-                const base64Audio = btoa(
-                    String.fromCharCode(...new Uint8Array(pcmData.buffer))
-                );
-
-                const msg = {
-                    realtime_input: {
-                        media_chunks: [{
-                            mime_type: "audio/pcm",
-                            data: base64Audio
-                        }]
-                    }
-                };
-                socketRef.current.send(JSON.stringify(msg));
             };
 
-            source.connect(processor);
-            // AudioWorkletNode does not need to connect to destination if it doesn't output audio, 
-            // but it might be needed for the graph to run in some browsers. 
-            // Connecting to destination is safe here as we don't passthrough audio in the processor.
-            processor.connect(context.destination);
+            mediaRecorderRef.current.onstop = async () => {
+                const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                await sendAudioToBackend(audioBlob);
 
-            processorRef.current = processor;
+                // Stop all tracks
+                stream.getTracks().forEach(track => track.stop());
+            };
 
-        } catch (err) {
-            console.error("Mic Error:", err);
-            setIsSpeaking(false);
+            mediaRecorderRef.current.start();
+            setIsRecording(true);
+            setStatusMessage('Listening...');
+        } catch (error) {
+            console.error("Error accessing microphone:", error);
+            setStatusMessage('Error accessing microphone');
         }
     };
 
     const stopRecording = () => {
-        setIsSpeaking(false);
-        if (mediaStreamRef.current) {
-            mediaStreamRef.current.getTracks().forEach(track => track.stop());
-        }
-        if (processorRef.current) {
-            processorRef.current.disconnect();
-            processorRef.current = null;
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            setStatusMessage('Processing audio...');
         }
     };
 
-    const disconnect = () => {
-        stopRecording();
-        if (socketRef.current) socketRef.current.close();
-        if (audioContextRef.current) audioContextRef.current.close();
-        setIsConnected(false);
+    // --- Backend Communication ---
+    const sendAudioToBackend = async (audioBlob) => {
+        setIsProcessing(true);
+        try {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            // Replace with your actual backend URL
+            const response = await fetch('http://localhost:3000/api/chat-voice', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.text) {
+                setStatusMessage('Speaking response...');
+                speakResponse(data.text);
+            } else {
+                setStatusMessage('No response text received');
+            }
+
+        } catch (error) {
+            console.error("Error sending audio:", error);
+            setStatusMessage('Error communicating with server');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // --- Text to Speech (Browser Native) ---
+    const speakResponse = (text) => {
+        if (!window.speechSynthesis) {
+            setStatusMessage('TTS not supported in this browser');
+            return;
+        }
+
+        // Cancel any current speaking
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // Optional: Select a "Google" voice if available for better quality
+        const voices = window.speechSynthesis.getVoices();
+        const googleVoice = voices.find(v => v.name.includes("Google") && v.lang.includes("en"));
+        if (googleVoice) utterance.voice = googleVoice;
+
+        utterance.onstart = () => setIsPlaying(true);
+        utterance.onend = () => {
+            setIsPlaying(false);
+            setStatusMessage('');
+        };
+        utterance.onerror = (e) => {
+            console.error("TTS Error:", e);
+            setIsPlaying(false);
+            setStatusMessage('Error playing audio');
+        };
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    const stopPlayback = () => {
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            setIsPlaying(false);
+            setStatusMessage('');
+        }
     };
 
     return (
-        <div className="p-8 max-w-md mx-auto bg-white rounded-xl shadow-lg border border-gray-100 flex flex-col items-center gap-6">
-            <div className="text-center">
-                <h2 className="text-xl font-bold text-gray-800">Gemini Live</h2>
-                <p className="text-sm text-gray-500">Native Audio Integration</p>
-            </div>
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
+            <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 relative">
 
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${isSpeaking ? 'bg-red-100 animate-pulse' : 'bg-gray-100'
-                }`}>
-                {isSpeaking ? (
-                    <Volume2 className="w-10 h-10 text-red-500" />
-                ) : (
-                    <MicOff className="w-10 h-10 text-gray-400" />
-                )}
-            </div>
+                {/* Visualizer / Status Area */}
+                <div className="h-48 bg-gradient-to-br from-green-500 to-emerald-700 flex flex-col items-center justify-center text-white p-6 relative overflow-hidden">
+                    {/* Abstract Circles Background */}
+                    <div className="absolute top-[-50%] left-[-20%] w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-[-50%] right-[-20%] w-64 h-64 bg-emerald-300 opacity-20 rounded-full blur-3xl"></div>
 
-            <div className="flex gap-4 w-full">
-                {!isConnected ? (
-                    <button
-                        onClick={connect}
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                    >
-                        Connect
-                    </button>
-                ) : (
-                    <>
-                        {!isSpeaking ? (
+                    {isProcessing ? (
+                        <div className="flex flex-col items-center gap-3 z-10">
+                            <Loader2 className="w-12 h-12 animate-spin text-white/90" />
+                            <span className="text-sm font-medium opacity-90">Thinking...</span>
+                        </div>
+                    ) : isPlaying ? (
+                        <div className="flex flex-col items-center gap-3 z-10 animate-pulse">
+                            <Volume2 className="w-16 h-16 text-white" />
+                            <span className="text-sm font-medium opacity-90">Speaking...</span>
+                        </div>
+                    ) : isRecording ? (
+                        <div className="flex flex-col items-center gap-3 z-10">
+                            <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center animate-pulse shadow-lg ring-4 ring-red-400/30">
+                                <Mic className="w-10 h-10 text-white" />
+                            </div>
+                            <span className="text-sm font-medium opacity-90">Listening...</span>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-3 z-10 opacity-80">
+                            <Mic className="w-12 h-12" />
+                            <span className="text-sm font-medium">Tap to Speak</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Controls Area */}
+                <div className="p-8 flex flex-col items-center gap-6">
+                    <div className="text-center space-y-1">
+                        <h2 className="text-2xl font-bold text-gray-800">Voice Assistant</h2>
+                        <p className="text-gray-500 text-sm min-h-[20px]">{statusMessage || "Ready to help you"}</p>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        {!isRecording && !isPlaying && (
                             <button
                                 onClick={startRecording}
-                                className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2"
+                                className="w-16 h-16 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-4 focus:ring-green-200"
                             >
-                                <Mic className="w-4 h-4" /> Start Mic
-                            </button>
-                        ) : (
-                            <button
-                                onClick={stopRecording}
-                                className="flex-1 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium"
-                            >
-                                Mute Mic
+                                <Mic className="w-8 h-8" />
                             </button>
                         )}
 
-                        <button
-                            onClick={disconnect}
-                            className="px-4 py-3 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-medium"
-                        >
-                            End
-                        </button>
-                    </>
-                )}
+                        {isRecording && (
+                            <button
+                                onClick={stopRecording}
+                                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all animate-bounce-slight"
+                            >
+                                <Square className="w-6 h-6 fill-current" />
+                            </button>
+                        )}
+
+                        {isPlaying && (
+                            <button
+                                onClick={stopPlayback}
+                                className="w-16 h-16 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 flex items-center justify-center shadow-md transition-all"
+                            >
+                                <Square className="w-6 h-6 fill-current" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+
             </div>
 
-            {isConnected && (
-                <div className="text-xs text-green-600 font-mono bg-green-50 px-2 py-1 rounded">
-                    ● Connected to WebSocket
-                </div>
-            )}
+            <p className="mt-8 text-xs text-gray-400 text-center max-w-xs">
+                Powered by Gemini AI • Audio is processed securely
+            </p>
         </div>
     );
 };

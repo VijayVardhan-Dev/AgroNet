@@ -30,7 +30,7 @@ const AppLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const isActive = (path) => location.pathname === path;
-    const shouldHideHeader = location.pathname === ROUTES.RENTALS || location.pathname === ROUTES.MAPS;
+    const shouldHideHeader = location.pathname === ROUTES.RENTALS || location.pathname === ROUTES.MAPS || location.pathname === ROUTES.CHAT;
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans text-gray-800 flex">

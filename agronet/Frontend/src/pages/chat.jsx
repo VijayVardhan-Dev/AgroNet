@@ -93,26 +93,19 @@ const Chat = () => {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-120px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-120px)]  rounded-2xl overflow-hidden">
 
-            {/* Header */}
-            <div className="bg-green-600 p-4 text-white flex items-center gap-2">
-                <Bot className="w-6 h-6" />
-                <h2 className="font-bold text-lg">AgroNet AI (Gemma)</h2>
-            </div>
+   
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 ">
                 {messages.map((msg, index) => (
                     <div
                         key={index}
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`max-w-[85%] md:max-w-[75%] p-3 rounded-2xl text-sm md:text-base ${msg.role === 'user'
-                                ? 'bg-green-600 text-white rounded-br-none shadow-md'
-                                : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none shadow-sm'
-                                }`}
+                            className={`max-w-[85%] md:max-w-[75%] px-5 py-3.5 rounded-2xl text-sm md:text-base leading-relaxed `}
                         >
                             <div className="prose prose-sm max-w-none 
                                 prose-headings:font-bold prose-headings:text-sm prose-headings:mb-1 
@@ -130,9 +123,9 @@ const Chat = () => {
 
                 {isLoading && (
                     <div className="flex justify-start">
-                        <div className="bg-white p-3 rounded-2xl rounded-bl-none border border-gray-100 shadow-sm flex items-center gap-2">
+                        <div className="p-3 rounded-2xl rounded-bl-none border border-gray-100  flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin text-green-600" />
-                            <span className="text-xs text-gray-500">Gemma is thinking...</span>
+                            <span className="text-xs text-gray-500">Thinking...</span>
                         </div>
                     </div>
                 )}
@@ -140,25 +133,25 @@ const Chat = () => {
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-100">
-                <div className="flex items-center gap-2">
+            <div className="p-4">
+                <form onSubmit={handleSend} className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-full border border-gray-200 focus-within:ring-2 focus-within:ring-green-500/20 focus-within:border-green-500 transition-all">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Ask about crops, weather..."
-                        className="flex-1 bg-gray-100 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:bg-white transition-all outline-none"
+                        className="flex-1 bg-transparent border-none px-4 py-2.5 text-sm md:text-base focus:ring-0 placeholder:text-gray-400 outline-none"
                         disabled={isLoading}
                     />
                     <button
                         type="submit"
                         disabled={isLoading || !input.trim()}
-                        className="bg-green-600 disabled:bg-gray-300 text-white p-3 rounded-xl hover:bg-green-700 transition-colors shadow-md"
+                        className="bg-green-600 disabled:bg-gray-300 text-white p-2.5 rounded-full hover:bg-green-700 transition-all shrink-0"
                     >
                         <Send className="w-5 h-5" />
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 };
