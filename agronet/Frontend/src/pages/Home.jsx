@@ -1,13 +1,11 @@
+import { useState, useEffect } from 'react';
 import {
-  Sun,
-  CloudSun,
-  CloudRain,
-  Plus,
-  CheckCircle,
-  Star,
-  MapPin,
-  Tag
+  Sun, CloudSun, CloudRain, Plus, CheckCircle, Star, MapPin, Tag, ShoppingCart
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { getCrops } from '../services/cropService';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 import banner from '../assets/images/banner.png';
 import rice from '../assets/images/rice.png';
@@ -20,6 +18,35 @@ import grams from '../assets/images/grams.png';
 import spices from '../assets/images/spices.png';
 
 const Home = () => {
+  const [crops, setCrops] = useState([]);
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    fetchCrops();
+  }, []);
+
+  const fetchCrops = async () => {
+    const fetchedCrops = await getCrops();
+    setCrops(fetchedCrops);
+  };
+
+  const handleProductClick = (id) => {
+    navigate(`/product/crop/${id}`);
+  };
+
+  const handleAddToCart = (e, product) => {
+    e.stopPropagation();
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      type: 'crop',
+      image: rice // Placeholder
+    });
+    alert(`Added ${product.name} to cart!`);
+  };
+
   return (
     <div className="space-y-6 pt-4">
 
@@ -84,21 +111,21 @@ const Home = () => {
         <div className='pt-10'>
           <h2 className="font-semibold mb-3 text-sm text-gray-700">Top rated</h2>
           <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-            {[1, 2, 3, 4, 5].map((item) => (
-              <div key={item} className="min-w-[150px] md:min-w-[180px] bg-green-50/50 p-3 rounded-xl relative hover:shadow-md transition-shadow">
+            {crops.map((item) => (
+              <div key={item.id} onClick={() => handleProductClick(item.id)} className="min-w-[150px] md:min-w-[180px] bg-green-50/50 p-3 rounded-xl relative hover:shadow-md transition-shadow cursor-pointer">
                 <div className="h-28 bg-green-100 rounded-lg mb-2 overflow-hidden">
-                  <img src={rice} alt="Rice" className="w-full h-full object-cover" />
+                  <img src={rice} alt={item.name} className="w-full h-full object-cover" />
                 </div>
-                <button className="absolute top-28 right-2 bg-white border border-green-200 rounded-md p-1 shadow-sm hover:bg-green-50">
+                <button onClick={(e) => handleAddToCart(e, item)} className="absolute top-28 right-2 bg-white border border-green-200 rounded-md p-1 shadow-sm hover:bg-green-50 z-10">
                   <Plus className="w-4 h-4 text-green-600" />
                 </button>
                 <div className="mt-4">
-                  <p className="font-bold text-sm text-gray-800">250</p>
-                  <p className="text-xs text-gray-600">Rice</p>
-                  <p className="text-[10px] text-gray-500">Quality assured</p>
+                  <p className="font-bold text-sm text-gray-800 text-truncate">{item.name}</p>
+                  <p className="text-xs text-gray-600">{item.category}</p>
+                  <p className="text-[10px] text-gray-500">Available: {item.availableQty} {item.unit}</p>
                   <div className="flex justify-between items-center mt-1">
-                    <span className="text-[10px] text-gray-400">50kg</span>
-                    <span className="text-[10px] font-bold text-green-600 flex items-center">★ 4.2</span>
+                    <span className="text-[10px] text-gray-400">₹{item.price}/{item.unit}</span>
+                    <span className="text-[10px] font-bold text-green-600 flex items-center">★ {item.farmerRating || 4.5}</span>
                   </div>
                 </div>
               </div>
@@ -136,31 +163,22 @@ const Home = () => {
         <div>
           <h2 className="font-semibold mb-3 text-sm text-gray-700">New arrivals</h2>
           <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
-
-            {/* Card 1 */}
-            <div className="min-w-[280px] md:min-w-[320px]">
-              <ProductCard
-                image={rice}
-                title="Premium Quality Rice"
-                author="Krishna Murthy"
-                rating="4.2"
-                location="Kakinda, 5km"
-                price="25"
-              />
-            </div>
-
-            {/* Card 2 */}
-            <div className="min-w-[280px] md:min-w-[320px]">
-              <ProductCard
-                image={rice}
-                title="Premium Quality Rice"
-                author="Krishna Murthy"
-                rating="4.2"
-                location="Kakinda, 5km"
-                price="25"
-              />
-            </div>
-
+            {crops.length > 0 ? crops.map(product => (
+              <div key={product.id} className="min-w-[280px] md:min-w-[320px] cursor-pointer" onClick={() => handleProductClick(product.id)}>
+                <ProductCard
+                  image={rice} // Placeholder
+                  title={product.name}
+                  author={product.farmerName}
+                  rating={product.farmerRating || "4.5"}
+                  location={product.farmerLocation}
+                  price={product.price}
+                  unit={product.unit}
+                  onAdd={(e) => handleAddToCart(e, product)}
+                />
+              </div>
+            )) : (
+              <div className="text-gray-500 text-sm">No crops listed yet.</div>
+            )}
           </div>
         </div>
 
@@ -171,10 +189,16 @@ const Home = () => {
 
 // --- Sub Components ---
 
-const ProductCard = ({ image, title, author, rating, location, price }) => (
-  <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-    <div className="h-40 w-full bg-yellow-100">
+const ProductCard = ({ image, title, author, rating, location, price, unit, onAdd }) => (
+  <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 group">
+    <div className="h-40 w-full bg-yellow-100 relative">
       <img src={image} alt={title} className="w-full h-full object-cover" />
+      <button
+        onClick={onAdd}
+        className="absolute bottom-2 right-2 bg-green-600 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <ShoppingCart size={16} />
+      </button>
     </div>
 
     <div className="p-4">
@@ -182,7 +206,7 @@ const ProductCard = ({ image, title, author, rating, location, price }) => (
 
       <div className="flex items-center gap-1 mt-1 mb-3">
         <span className="text-xs text-gray-500">by {author}</span>
-        <CheckCircle className="w-3 h-3 text-blue-500 fill-blue-500 text-white" />
+        <CheckCircle className="w-3 h-3 text-blue-500 fill-blue-500" />
       </div>
 
       <div className="flex items-center gap-4 mb-3">
@@ -198,7 +222,7 @@ const ProductCard = ({ image, title, author, rating, location, price }) => (
       <div className="flex items-center gap-2">
         <Tag className="w-4 h-4 text-gray-700" />
         <span className="text-lg font-bold text-green-700">₹{price}</span>
-        <span className="text-sm text-gray-400 font-normal">/kg</span>
+        <span className="text-sm text-gray-400 font-normal">/{unit}</span>
       </div>
     </div>
   </div>

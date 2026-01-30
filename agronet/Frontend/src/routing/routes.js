@@ -10,4 +10,10 @@ export const ROUTES = {
     VOICE: "/voice",
     SCHEMES: "/schemes",
     PROFILE: "/profile",
+    ORDERS: "/orders",
+    ORDERS: "/orders",
+    DELIVERIES: "/deliveries",
+    FARMER_DASHBOARD: "/farmer-dashboard",
+    PRODUCT_DETAILS: "/product/:type/:id",
+    CART: "/cart",
 };

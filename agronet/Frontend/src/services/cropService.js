@@ -1,22 +1,76 @@
-// Mock Crop Service
+import { db } from "../lib/firebase";
+import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, deleteDoc } from "firebase/firestore";
 
-const MOCK_CROPS = [
-    { id: 1, name: "Fresh Tomatoes", price: 40, farmerName: "Ramesh Kumar", location: "Nashik, MH", imageUrl: "https://placehold.co/400?text=Tomatoes", verified: true, category: "Vegetables" },
-    { id: 2, name: "Wheat (Lokwan)", price: 25, farmerName: "Suresh Patil", location: "Pune, MH", imageUrl: "https://placehold.co/400?text=Wheat", verified: false, category: "Cereals" },
-    { id: 3, name: "Alphonso Mangoes", price: 600, farmerName: "Ratnagiri Farms", location: "Ratnagiri, MH", imageUrl: "https://placehold.co/400?text=Mangoes", verified: true, category: "Fruits" },
-    { id: 4, name: "Red Onions", price: 30, farmerName: "Kisan Mandi", location: "Nashik, MH", imageUrl: "https://placehold.co/400?text=Onions", verified: true, category: "Vegetables" },
-    { id: 5, name: "Basmati Rice", price: 90, farmerName: "Punjab Agro", location: "Amritsar, PB", imageUrl: "https://placehold.co/400?text=Rice", verified: true, category: "Cereals" },
-    { id: 6, name: "Turmeric", price: 200, farmerName: "Sangli Spices", location: "Sangli, MH", imageUrl: "https://placehold.co/400?text=Turmeric", verified: true, category: "Spices" },
-];
+const COLLECTION_NAME = "crops";
 
-export const addCrop = async (cropData) => {
-    return new Promise((resolve) => {
-        setTimeout(() => resolve({ id: Date.now(), ...cropData }), 500);
-    });
+export const addCrop = async (cropData, userProfile) => {
+    try {
+        const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+            ...cropData,
+            farmerId: userProfile.uid,
+            farmerName: userProfile.fullName,
+            farmerLocation: userProfile.location?.address || "Unknown Location",
+            farmerRating: userProfile.rating || 0,
+            status: "active",
+            createdAt: new Date()
+        });
+        return { id: docRef.id, ...cropData };
+    } catch (error) {
+        console.error("Error adding crop:", error);
+        throw error;
+    }
 };
 
-export const getCrops = async () => {
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(MOCK_CROPS), 800);
-    });
+export const getCrops = async (category = null) => {
+    try {
+        let q = query(collection(db, COLLECTION_NAME), where("status", "==", "active"));
+
+        if (category) {
+            q = query(q, where("category", "==", category));
+        }
+
+        // Sorting might require composite index, safe to omit for now or try
+        // q = query(q, orderBy("createdAt", "desc")); 
+
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error getting crops:", error);
+        return [];
+    }
+};
+
+export const getCropById = async (id) => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { id: docSnap.id, ...docSnap.data() };
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error("Error getting crop:", error);
+        throw error;
+    }
+};
+
+export const getFarmerCrops = async (farmerId) => {
+    try {
+        const q = query(collection(db, COLLECTION_NAME), where("farmerId", "==", farmerId));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error getting farmer crops:", error);
+        return [];
+    }
+};
+
+export const deleteCrop = async (id) => {
+    try {
+        await deleteDoc(doc(db, COLLECTION_NAME, id));
+    } catch (error) {
+        console.error("Error deleting crop:", error);
+        throw error;
+    }
 };

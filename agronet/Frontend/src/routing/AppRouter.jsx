@@ -17,6 +17,11 @@ const Rentals = lazy(() => import("../pages/Rentals"));
 const Maps = lazy(() => import("../pages/Maps"));
 const Schemes = lazy(() => import("../pages/Schemes"));
 const Profile = lazy(() => import("../pages/Profile"));
+const Orders = lazy(() => import("../pages/Orders"));
+const Deliveries = lazy(() => import("../pages/Deliveries"));
+const FarmerDashboard = lazy(() => import("../pages/FarmerDashboard"));
+const ProductDetails = lazy(() => import("../pages/ProductDetails"));
+const Cart = lazy(() => import("../pages/Cart"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 // Protected Route Component
@@ -110,7 +115,7 @@ const AppRouter = () => {
                     </ProtectedRoute>
                 }
             />
-             <Route
+            <Route
                 path={ROUTES.CHAT}
                 element={
                     <ProtectedRoute>
@@ -140,7 +145,60 @@ const AppRouter = () => {
                     </ProtectedRoute>
                 }
             />
+            <Route
+                path={ROUTES.ORDERS}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Orders />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
 
+            <Route
+                path={ROUTES.DELIVERIES}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Deliveries />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path={ROUTES.FARMER_DASHBOARD}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <FarmerDashboard />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path={ROUTES.PRODUCT_DETAILS}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <ProductDetails />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path={ROUTES.CART}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Cart />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
             {/* 404 Route - Redirect to Login */}
             <Route
                 path="*"

@@ -18,7 +18,9 @@ import {
     Tractor,
     Heart,
     ShoppingCart,
-    Store
+    Store,
+    Truck,
+    Package
 } from 'lucide-react';
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
@@ -37,7 +39,7 @@ const AppLayout = ({ children }) => {
 
             {/* --- Desktop Sidebar --- */}
             {/* --- Desktop Sidebar --- */}
-            <aside className="hidden md:flex flex-col md:w-20 lg:w-64 bg-white h-screen sticky top-0 border-r border-gray-100 md:p-3 lg:p-6 flex-shrink-0 z-30 transition-all duration-300">
+            <aside className="hidden md:flex flex-col md:w-20 lg:w-64 bg-white h-screen sticky top-0 border-r border-gray-100 md:p-3 lg:p-6 shrink-0 z-30 transition-all duration-300">
                 {/* Logo */}
                 <div className="flex items-center gap-2 mb-10 justify-center lg:justify-start">
                     <div className="w-8 h-8 flex items-center justify-center">
@@ -49,8 +51,6 @@ const AppLayout = ({ children }) => {
                 {/* Navigation Links */}
                 <nav className="flex-1 space-y-1 overflow-y-auto pr-2 no-scrollbar">
                     <div className="space-y-1">
-                        <SidebarItem to={ROUTES.HOME} icon={<HomeIcon size={20} />} label="Home" active={isActive(ROUTES.HOME)} />
-                        <SidebarItem to={ROUTES.RENTALS} icon={<Key size={20} />} label="Rentals" active={isActive(ROUTES.RENTALS)} />
                         <SidebarItem to={ROUTES.MAPS} icon={<Map size={20} />} label="Maps" active={isActive(ROUTES.MAPS)} />
                         <SidebarItem to={ROUTES.CHAT} icon={<MessageSquare size={20} />} label="AI Assistant" active={isActive(ROUTES.CHAT)} />
                         <SidebarItem to={ROUTES.VOICE} icon={<Bell size={20} />} label="Voice" active={isActive(ROUTES.VOICE)} />
@@ -58,16 +58,16 @@ const AppLayout = ({ children }) => {
 
                     <div className="pt-6 pb-2">
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hidden lg:block">Market</p>
-                        <SidebarItem to="#" icon={<Store size={20} />} label="Shop Crops" />
-                        <SidebarItem to="#" icon={<ShoppingBag size={20} />} label="My Orders" />
+                        <SidebarItem to={ROUTES.HOME} icon={<Store size={20} />} label="Shop Crops" active={isActive(ROUTES.HOME)} />
+                        <SidebarItem to={ROUTES.RENTALS} icon={<Key size={20} />} label="Rentals" active={isActive(ROUTES.RENTALS)} />
+                        <SidebarItem to={ROUTES.ORDERS} icon={<ShoppingBag size={20} />} label="My Orders" active={isActive(ROUTES.ORDERS)} />
                         <SidebarItem to="#" icon={<Heart size={20} />} label="Wishlist" />
                     </div>
 
                     <div className="pt-6 pb-2">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hidden lg:block">Farmer</p>
-                        <SidebarItem to="#" icon={<LayoutDashboard size={20} />} label="Sales Dashboard" />
-                        <SidebarItem to="#" icon={<Sprout size={20} />} label="My Crops" />
-                        <SidebarItem to="#" icon={<Tractor size={20} />} label="My Equipment" />
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hidden lg:block">Work</p>
+                        <SidebarItem to={ROUTES.FARMER_DASHBOARD} icon={<LayoutDashboard size={20} />} label="Farmer Dashboard" active={isActive(ROUTES.FARMER_DASHBOARD)} />
+                        <SidebarItem to={ROUTES.DELIVERIES} icon={<Truck size={20} />} label="Deliveries (Driver)" active={isActive(ROUTES.DELIVERIES)} />
                     </div>
                 </nav>
 
@@ -97,7 +97,9 @@ const AppLayout = ({ children }) => {
                             <img src={logo} alt="AgroNet" className="w-full h-full object-contain" />
                         </div>
                         <div className="flex gap-4 items-center">
-                            <ShoppingBag className="w-6 h-6 text-gray-600" />
+                            <Link to={ROUTES.CART}>
+                                <ShoppingBag className="w-6 h-6 text-gray-600" />
+                            </Link>
                             <div className="relative">
                                 <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="focus:outline-none">
                                     <User className="w-6 h-6 text-gray-600" />
@@ -105,7 +107,7 @@ const AppLayout = ({ children }) => {
                                 {isMenuOpen && (
                                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-50">
                                         <Link to={ROUTES.PROFILE} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Profile</Link>
-                                        <button onClick={() => { logout(); setIsMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2">
+                                        <button onClick={() => { logout(); setIsMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 items-center gap-2">
                                             <LogOut size={14} /> Logout
                                         </button>
                                     </div>
@@ -129,14 +131,16 @@ const AppLayout = ({ children }) => {
                             </div>
                         </div>
                         <div className="flex items-center gap-6 ml-4">
-                            <button className="text-gray-600 hover:text-green-700"><ShoppingBag size={22} /></button>
+                            <Link to={ROUTES.CART} className="text-gray-600 hover:text-green-700">
+                                <ShoppingBag size={22} />
+                            </Link>
                             <button className="text-gray-600 hover:text-green-700"><User size={22} /></button>
                         </div>
                     </header>
                 )}
 
                 {/* --- Main Content --- */}
-                <main className="flex-grow p-1 md:p-8 overflow-y-auto">
+                <main className="grow p-1 md:p-8 overflow-y-auto">
                     {children}
                 </main>
 

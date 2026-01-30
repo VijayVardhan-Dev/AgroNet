@@ -29,10 +29,12 @@ const RecenterAutomatically = ({ lat, lng }) => {
 };
 
 const Maps = () => {
-    const [position, setPosition] = useState(null); // Default null until loaded
+    const [position, setPosition] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [markers, setMarkers] = useState([]);
 
     useEffect(() => {
+        // Get user location
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -44,23 +46,41 @@ const Maps = () => {
                 },
                 (error) => {
                     console.error("Error getting location:", error);
-                    // Default fallback (e.g., Kakinada as seen in other screens)
                     setPosition({ lat: 16.9891, lng: 82.2475 });
                     setLoading(false);
                 }
             );
         } else {
-            // Fallback if geolocation not supported
             setPosition({ lat: 16.9891, lng: 82.2475 });
             setLoading(false);
         }
+
+        // Fetch map data
+        fetchMapData();
     }, []);
+
+    const fetchMapData = async () => {
+        // Import dynamically to avoid circular dependencies if any, or just standard import
+        const { getResources, getFarmersLocations } = await import('../services/mapService');
+        const resources = await getResources();
+        const farmers = await getFarmersLocations();
+
+        const resourceMarkers = resources.map(r => ({
+            id: r.id,
+            lat: r.location?.lat,
+            lng: r.location?.lng,
+            title: r.name,
+            type: r.type // COLD_STORAGE, etc
+        }));
+
+        setMarkers([...resourceMarkers, ...farmers]);
+    };
 
     return (
         <div className="relative h-[calc(100vh-64px)] md:h-full w-full bg-gray-100 flex flex-col">
 
             {/* Custom Mobile Header */}
-            <div className="md:hidden absolute top-4 left-4 right-4 z-[9999] flex items-center justify-between pointer-events-none">
+            <div className="md:hidden absolute top-4 left-4 right-4 z-9999 flex items-center justify-between pointer-events-none">
                 <Link to={ROUTES.HOME} className="bg-white p-2.5 rounded-full shadow-md pointer-events-auto">
                     <ArrowLeft className="w-6 h-6 text-gray-700" />
                 </Link>
@@ -75,11 +95,11 @@ const Maps = () => {
             </div>
 
             {/* Map Area */}
-            <div className="flex-grow w-full h-full relative z-0">
+            <div className="grow w-full h-full relative z-0">
                 {!loading && position && (
                     <MapContainer
                         center={[position.lat, position.lng]}
-                        zoom={13}
+                        zoom={12}
                         style={{ height: "100%", width: "100%" }}
                         zoomControl={false}
                     >
@@ -88,10 +108,18 @@ const Maps = () => {
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
                         <Marker position={[position.lat, position.lng]}>
-                            <Popup>
-                                You are here
-                            </Popup>
+                            <Popup>You are here</Popup>
                         </Marker>
+
+                        {markers.map(m => (
+                            <Marker key={m.id} position={[m.lat, m.lng]}>
+                                <Popup>
+                                    <strong>{m.title || m.name}</strong><br />
+                                    {m.type}
+                                </Popup>
+                            </Marker>
+                        ))}
+
                         <RecenterAutomatically lat={position.lat} lng={position.lng} />
                     </MapContainer>
                 )}
@@ -103,11 +131,11 @@ const Maps = () => {
             </div>
 
             {/* Custom Bottom Bar for Maps (Mobile) */}
-            <div className="md:hidden absolute bottom-0 left-0 w-full bg-white rounded-t-3xl shadow-[0_-5px_15px_rgba(0,0,0,0.1)] p-5 z-[9999]">
+            <div className="md:hidden absolute bottom-0 left-0 w-full bg-white rounded-t-3xl shadow-[0_-5px_15px_rgba(0,0,0,0.1)] p-5 z-9999">
                 <div className="flex justify-between items-center px-2">
                     <div className='flex flex-col gap-1'>
                         <h3 className="font-bold text-lg text-gray-800">Your Location</h3>
-                        <p className="text-sm text-gray-500">Finding nearby resources...</p>
+                        <p className="text-sm text-gray-500">Found {markers.length} nearby resources</p>
                     </div>
                     <button
                         className="bg-green-600 p-3 rounded-full shadow-lg text-white"
