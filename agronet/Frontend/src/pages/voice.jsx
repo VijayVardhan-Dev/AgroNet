@@ -56,7 +56,7 @@ const Voice = () => {
             formData.append('audio', audioBlob, 'recording.webm');
 
             // Replace with your actual backend URL
-            const response = await fetch('http://localhost:3000/api/chat-voice', {
+            const response = await fetch('https://agronet-i12n.onrender.com/api/chat-voice', {
                 method: 'POST',
                 body: formData,
             });
@@ -126,7 +126,7 @@ const Voice = () => {
             <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 relative">
 
                 {/* Visualizer / Status Area */}
-                <div className="h-48 bg-gradient-to-br from-green-500 to-emerald-700 flex flex-col items-center justify-center text-white p-6 relative overflow-hidden">
+                <div className="h-48 bg-linear-to-br from-green-500 to-emerald-700 flex flex-col items-center justify-center text-white p-6 relative overflow-hidden">
                     {/* Abstract Circles Background */}
                     <div className="absolute top-[-50%] left-[-20%] w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
                     <div className="absolute bottom-[-50%] right-[-20%] w-64 h-64 bg-emerald-300 opacity-20 rounded-full blur-3xl"></div>

@@ -169,7 +169,7 @@ const Deliveries = () => {
 
             {/* Map Modal */}
             {selectedJob && (
-                <div className="fixed inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-1000 bg-black/60 flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
                         <div className="p-4 border-b flex justify-between items-center bg-gray-50">
                             <h3 className="font-bold text-lg">Route Details</h3>
