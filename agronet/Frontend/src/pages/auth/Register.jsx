@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { ROUTES } from "../../routing/routes";
 
 const Register = () => {
     const [email, setEmail] = useState("");
@@ -8,8 +9,14 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const { signup, googleSignIn } = useAuth();
+    const { signup, googleSignIn, user } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate(ROUTES.HOME);
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -22,7 +29,6 @@ const Register = () => {
             setError("");
             setLoading(true);
             await signup(email, password);
-            navigate("/");
         } catch (err) {
             setError("Failed to create an account. " + err.message);
         } finally {
@@ -35,7 +41,6 @@ const Register = () => {
             setError("");
             setLoading(true);
             await googleSignIn();
-            navigate("/");
         } catch (err) {
             setError("Failed to sign up with Google. " + err.message);
         } finally {

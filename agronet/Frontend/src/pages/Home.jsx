@@ -19,12 +19,67 @@ import spices from '../assets/images/spices.png';
 
 const Home = () => {
   const [crops, setCrops] = useState([]);
+  const [weather, setWeather] = useState(null);
+  const [loadingWeather, setLoadingWeather] = useState(true);
+  const [errorWeather, setErrorWeather] = useState(null);
+
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
   useEffect(() => {
     fetchCrops();
+    handleRefreshWeather();
   }, []);
+
+  const handleRefreshWeather = () => {
+    setLoadingWeather(true);
+    setErrorWeather(null);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeather(latitude, longitude);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          let errorMessage = "Location access denied.";
+          if (error.code === 3) errorMessage = "Location request timed out.";
+          if (error.code === 2) errorMessage = "Location unavailable.";
+          setErrorWeather(errorMessage);
+          setLoadingWeather(false);
+        }
+      );
+    } else {
+      setErrorWeather("Geolocation not supported.");
+      setLoadingWeather(false);
+    }
+  };
+
+  const fetchWeather = async (lat, lon) => {
+    if (!API_KEY || API_KEY.includes('your_weatherapi_key_here')) {
+      console.warn("Weather API Key not set");
+      setErrorWeather("API Key missing.");
+      setLoadingWeather(false);
+      return;
+    }
+    try {
+      const weatherRes = await fetch(
+        `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${lat},${lon}&days=3&aqi=no&alerts=no`
+      );
+      if (!weatherRes.ok) throw new Error("Weather fetch failed");
+      const weatherData = await weatherRes.json();
+      setWeather(weatherData); // Stores the whole response object
+      setErrorWeather(null);
+    } catch (error) {
+      console.error("Error fetching weather:", error);
+      setErrorWeather("Failed to load weather.");
+    } finally {
+      setLoadingWeather(false);
+    }
+  };
+
+  /* --- Logic removed --- */
 
   const fetchCrops = async () => {
     const fetchedCrops = await getCrops();
@@ -67,30 +122,82 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* --- Weather Widget --- */}
           <div className=''>
-            <h2 className="font-semibold mb-3 text-sm text-gray-700">Weather</h2>
-            <div className="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center h-full">
-              {/* Current Weather */}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <Sun className="w-10 h-10 text-yellow-400 fill-yellow-400" />
-                  <div>
-                    <h3 className="text-3xl font-bold text-gray-800">24°C</h3>
-                    <p className="text-xs font-bold text-gray-900">Kakinada</p>
-                  </div>
+            <h2 className="font-semibold mb-3 text-sm text-gray-700 flex justify-between items-center">
+              Weather
+              <button
+                onClick={handleRefreshWeather}
+                className="text-xs text-green-600 hover:text-green-800 underline active:text-green-700 transition-colors"
+                title="Refresh location and weather"
+              >
+                Refresh Location
+              </button>
+            </h2>
+            <div className="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center h-full min-h-[140px] relative">
+              {loadingWeather ? (
+                <div className="flex flex-col items-center justify-center w-full text-gray-400 text-sm gap-2">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                  <span className='text-xs'>Fetching location & weather...</span>
                 </div>
-                <p className="text-[10px] text-gray-500 mt-1">Partly Cloudy, High 26°, Low 18°</p>
-              </div>
-
-              {/* Mini Forecast */}
-              <div className="flex gap-2 text-center">
-                {['Mon', 'Tue', 'Wed'].map((day, i) => (
-                  <div key={i} className="flex flex-col items-center">
-                    <span className="text-[9px] text-gray-500 mb-1">{day}</span>
-                    {i % 2 === 0 ? <CloudSun className="w-4 h-4 text-gray-400" /> : <CloudRain className="w-4 h-4 text-blue-300" />}
-                    <span className="text-[8px] text-gray-600 mt-1">20°/18°</span>
+              ) : errorWeather ? (
+                <div className="flex flex-col items-center justify-center w-full text-center gap-2">
+                  <p className="text-xs text-red-500">{errorWeather}</p>
+                  <button
+                    onClick={handleRefreshWeather}
+                    className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs hover:bg-green-100 transition-colors border border-green-200"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : weather ? (
+                <>
+                  {/* Current Weather */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      {/* WeatherAPI sends an icon URL, usually starting with //cdn.weatherapi.com/... */}
+                      <img
+                        src={`https:${weather.current.condition.icon}`}
+                        alt={weather.current.condition.text}
+                        className="w-10 h-10 object-contain"
+                      />
+                      <div>
+                        <h3 className="text-3xl font-bold text-gray-800">{Math.round(weather.current.temp_c)}°C</h3>
+                        <p className="text-xs font-bold text-gray-900">{weather.location.name}</p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-1 capitalize">
+                      {weather.current.condition.text},
+                      High {Math.round(weather.forecast.forecastday[0].day.maxtemp_c)}°,
+                      Low {Math.round(weather.forecast.forecastday[0].day.mintemp_c)}°
+                    </p>
                   </div>
-                ))}
-              </div>
+
+                  {/* Mini Forecast */}
+                  <div className="flex gap-2 text-center">
+                    {weather.forecast.forecastday.map((day, i) => {
+                      const date = new Date(day.date);
+                      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                      return (
+                        <div key={i} className="flex flex-col items-center">
+                          <span className="text-[9px] text-gray-500 mb-1">{dayName}</span>
+                          <img
+                            src={`https:${day.day.condition.icon}`}
+                            alt={day.day.condition.text}
+                            className="w-4 h-4 object-contain"
+                          />
+                          <span className="text-[8px] text-gray-600 mt-1">{Math.round(day.day.avgtemp_c)}°</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center w-full text-gray-400 text-xs text-center gap-2">
+                  <p>Weather unavailable.</p>
+                  {!API_KEY || API_KEY.includes('your_weatherapi_key_here') ? (
+                    <p className="text-[10px] text-red-400">Please set VITE_WEATHER_API_KEY in .env</p>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
 

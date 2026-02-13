@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { ROUTES } from "../../routing/routes";
@@ -8,8 +8,14 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const { login, googleSignIn } = useAuth();
+    const { login, googleSignIn, user } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate(ROUTES.HOME);
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -17,7 +23,6 @@ const Login = () => {
             setError("");
             setLoading(true);
             await login(email, password);
-            navigate(ROUTES.HOME);
         } catch (err) {
             setError("Failed to sign in. " + err.message);
         } finally {
@@ -30,7 +35,6 @@ const Login = () => {
             setError("");
             setLoading(true);
             await googleSignIn();
-            navigate(ROUTES.HOME);
         } catch (err) {
             setError("Failed to sign in with Google. " + err.message);
         } finally {
