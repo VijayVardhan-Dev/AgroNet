@@ -14,7 +14,7 @@ const Register = () => {
 
     useEffect(() => {
         if (user) {
-            navigate(ROUTES.HOME);
+            navigate(ROUTES.HOME, { replace: true });
         }
     }, [user, navigate]);
 

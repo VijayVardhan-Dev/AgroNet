@@ -114,7 +114,7 @@ const Home = () => {
     <div className="bg-[#FAF9F6] min-h-screen pb-4 font-sans text-gray-800 overflow-x-hidden">
 
       {/* --- Header Section --- */}
-      <div className="px-5 pt-12 flex justify-between items-center">
+      <div className="px-5  flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-orange-100 rounded-[14px] overflow-hidden">
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Cameron" alt="Avatar" className="w-full h-full object-cover" />
@@ -177,7 +177,7 @@ const Home = () => {
 
       {/* --- Slideshow: Weather + Schemes + Promo --- */}
       <div className="mt-6 px-5">
-        <div className="relative w-full overflow-hidden rounded-[22px] shadow-sm" style={{ height: '170px' }}>
+        <div className="md:hidden relative w-full overflow-hidden rounded-[22px] shadow-sm" style={{ height: '170px' }}>
           <div
             className="flex transition-transform duration-700 ease-in-out h-full"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -257,6 +257,79 @@ const Home = () => {
                   }`}
               />
             ))}
+          </div>
+        </div>
+
+        {/* Desktop Bento Grid */}
+        <div className="hidden md:grid grid-cols-3 gap-6 h-[220px]">
+          {/* Card 1: Weather */}
+          <div className="rounded-[22px] shadow-sm bg-gradient-to-br from-[#4A90E2] to-[#357ABD] p-6 flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+            
+            <div className="flex justify-between items-start z-10">
+              <div className="flex flex-col">
+                 <h2 className="text-white/90 font-bold text-lg">Weather Forecast</h2>
+                 <p className="text-white/70 text-xs">Real-time updates</p>
+              </div>
+              {weather && weather.current && <img src={`https:${weather.current.condition.icon}`} alt="weather" className="w-16 h-16 drop-shadow-lg -mt-2" />}
+            </div>
+
+            <div className="z-10 mt-auto">
+              {loadingWeather ? (
+                <div className="flex items-center gap-3 text-white/80 text-sm">
+                  <RefreshCw className="w-5 h-5 animate-spin" /> Fetching weather...
+                </div>
+              ) : errorWeather ? (
+                <div className="flex items-center gap-3 text-white/80 text-sm">
+                  <AlertCircle className="w-5 h-5" /> {errorWeather}
+                </div>
+              ) : weather ? (
+                <div className="flex justify-between items-end">
+                   <div>
+                      <span className="text-white text-4xl font-extrabold">{Math.round(weather.current.temp_c)}°C</span>
+                      <p className="text-white/90 text-sm font-semibold mt-1">{weather.location.name}</p>
+                      <p className="text-white/70 text-xs capitalize">{weather.current.condition.text}</p>
+                   </div>
+                   <div className="flex flex-col gap-1 text-white/80 text-xs text-right">
+                      <span>💧 {weather.current.humidity}% Humidity</span>
+                      <span>🌬️ {weather.current.wind_kph} km/h Wind</span>
+                   </div>
+                </div>
+              ) : (
+                <span className="text-white/60 text-sm">Weather unavailable</span>
+              )}
+            </div>
+          </div>
+
+          {/* Card 2: Schemes */}
+          <div className="rounded-[22px] shadow-sm bg-gradient-to-br from-[#FF9A56] to-[#FF6B00] p-6 flex flex-col justify-center relative overflow-hidden group hover:shadow-md transition-all">
+             <div className="absolute bottom-0 right-0 text-9xl opacity-10 pointer-events-none transform translate-x-10 translate-y-10">🌾</div>
+             
+             <span className="text-white/80 text-xs font-bold uppercase tracking-widest mb-2">Government Scheme</span>
+             <h3 className="text-white text-2xl font-bold leading-tight mb-2">PM-KISAN</h3>
+             <p className="text-white/90 text-sm mb-6">Get ₹6,000/year direct income support for farmers.</p>
+             
+             <button className="bg-white text-[#FF6B00] px-5 py-2.5 rounded-xl text-sm font-bold w-fit shadow-lg shadow-orange-700/20 hover:bg-orange-50 transition-colors">
+                Learn More
+             </button>
+          </div>
+
+          {/* Card 3: Promo / Market */}
+          <div className="rounded-[22px] shadow-sm bg-gradient-to-br from-[#A5E07D] to-[#86C95E] p-6 flex items-center relative overflow-hidden group hover:shadow-md transition-all">
+             <div className="relative z-10 w-[60%]">
+                <h3 className="text-gray-900 text-xl font-bold leading-tight mb-3">
+                  Fresh Foods & Best Service
+                </h3>
+                <p className="text-gray-800 text-sm font-medium mb-5">Get up to 30% off on your first bulk order!</p>
+                <button className="bg-white text-gray-900 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-green-700/10 hover:bg-gray-50 transition-colors">
+                  Grab Voucher
+                </button>
+              </div>
+              <img
+                src={rice}
+                className="absolute -right-2 bottom-0 w-[160px] h-[160px] object-contain rotate-12 opacity-80 group-hover:scale-105 transition-transform duration-500"
+                alt="Promo"
+              />
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { getUserProfile, createUserProfile } from "../services/userService";
 
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
 
     const googleSignIn = async () => {
         const provider = new GoogleAuthProvider();
-        const userCredential = await signInWithRedirect(auth, provider);
+        const userCredential = await signInWithPopup(auth, provider);
         // Check if user exists, if not create
         const profile = await getUserProfile(userCredential.user.uid);
         if (!profile) {
