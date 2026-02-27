@@ -8,23 +8,17 @@ import {
     Map,
     MessageSquare,
     LogOut,
-    Menu,
     Search,
     Bell,
     HelpCircle,
-    Settings,
     LayoutDashboard,
-    Sprout,
-    Tractor,
     Heart,
     ShoppingCart,
     Store,
     Truck,
-    Package,
     ClipboardList
 } from 'lucide-react';
 import { useAuth } from "../../context/AuthContext";
-import { useState, useRef, useEffect, useCallback } from "react";
 import logo from '../../assets/images/logo.png';
 
 // --- Nav items config ---
@@ -36,133 +30,33 @@ const NAV_ITEMS = [
     { route: 'PROFILE', icon: User, label: 'Profile' },
 ];
 
-// --- Floating Bottom Nav with sliding pill ---
+// --- Mobile Bottom Nav ---
 const BottomNav = ({ currentPath }) => {
-    const containerRef = useRef(null);
-    const itemRefs = useRef([]);
-    const [pillStyle, setPillStyle] = useState({ left: 0, width: 42, opacity: 0 });
-    const [activeLabel, setActiveLabel] = useState('');
-    const [showLabel, setShowLabel] = useState(false);
-    const prevIndexRef = useRef(-1);
-
-    const activeIndex = NAV_ITEMS.findIndex(item => ROUTES[item.route] === currentPath);
-
-    const measureAndAnimate = useCallback(() => {
-        if (activeIndex === -1 || !containerRef.current) return;
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const el = itemRefs.current[activeIndex];
-        if (!el) return;
-
-        // First hide label, shrink pill to icon-only at target position
-        setShowLabel(false);
-
-        // Measure the icon-only position first for the slide
-        const elRect = el.getBoundingClientRect();
-        const iconOnlyWidth = 42;
-        const left = elRect.left - containerRect.left + (elRect.width / 2) - (iconOnlyWidth / 2);
-
-        setPillStyle({
-            left,
-            width: iconOnlyWidth,
-            opacity: 1,
-        });
-
-        // After pill arrives, expand it with label
-        const expandTimer = setTimeout(() => {
-            setActiveLabel(NAV_ITEMS[activeIndex].label);
-            // Measure expanded width: icon(20) + gap(8) + label text (~dynamic)
-            // We use a generous estimate, then the CSS will handle overflow
-            const labelWidths = { Home: 82, Wishlist: 94, Cart: 74, Orders: 88, Profile: 88 };
-            const expandedWidth = labelWidths[NAV_ITEMS[activeIndex].label] || 88;
-
-            const expandedLeft = elRect.left - containerRect.left + (elRect.width / 2) - (expandedWidth / 2);
-
-            setPillStyle({
-                left: Math.max(4, expandedLeft), // clamp to not overflow left
-                width: expandedWidth,
-                opacity: 1,
-            });
-
-            // Fade in label after expansion starts
-            setTimeout(() => setShowLabel(true), 120);
-        }, 480); // wait for slide to mostly finish
-
-        prevIndexRef.current = activeIndex;
-        return () => clearTimeout(expandTimer);
-    }, [activeIndex]);
-
-    useEffect(() => {
-        const cleanup = measureAndAnimate();
-        return cleanup;
-    }, [measureAndAnimate]);
-
-    // Recalculate on resize
-    useEffect(() => {
-        const handleResize = () => measureAndAnimate();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [measureAndAnimate]);
-
     return (
-        <div
-            ref={containerRef}
-            className="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 w-[88%] max-w-sm bg-white/95 backdrop-blur-md h-[58px] rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.1)] flex items-center justify-around px-1.5 border border-gray-100/50 z-50"
-            style={{ position: 'fixed' }}
-        >
-            {/* Sliding Pill Indicator */}
-            <div
-                className="absolute top-1/2 -translate-y-1/2 h-[42px] rounded-full bg-[#FF6B00] shadow-lg shadow-orange-200/50 flex items-center justify-center gap-1.5 pointer-events-none overflow-hidden"
-                style={{
-                    left: pillStyle.left,
-                    width: pillStyle.width,
-                    opacity: pillStyle.opacity,
-                    transition: 'left 0.7s cubic-bezier(0.25, 1.2, 0.5, 1), width 0.4s cubic-bezier(0.25, 1.2, 0.5, 1), opacity 0.2s ease',
-                    zIndex: 1,
-                }}
+        <div className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-white/95 backdrop-blur-md">
+            <nav
+                className="mx-auto grid max-w-md grid-cols-5 gap-1 px-2 pt-1"
+                style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
             >
-                {/* Icon inside pill */}
-                {activeIndex !== -1 && (() => {
-                    const IconComp = NAV_ITEMS[activeIndex].icon;
-                    return <IconComp className="w-[18px] h-[18px] text-white" />;
-                })()}
-                {/* Label inside pill */}
-                <span
-                    className="font-bold text-[12px] text-white whitespace-nowrap"
-                    style={{
-                        opacity: showLabel ? 1 : 0,
-                        transform: showLabel ? 'translateX(0)' : 'translateX(-6px)',
-                        transition: 'opacity 0.25s ease, transform 0.25s ease',
-                        maxWidth: showLabel ? '80px' : '0px',
-                        overflow: 'hidden',
-                    }}
-                >
-                    {activeLabel}
-                </span>
-            </div>
-
-            {/* Nav Items */}
-            {NAV_ITEMS.map((item, index) => {
+                {NAV_ITEMS.map((item) => {
                 const IconComp = item.icon;
                 const isItemActive = ROUTES[item.route] === currentPath;
                 return (
                     <Link
                         key={item.route}
                         to={ROUTES[item.route]}
-                        ref={el => itemRefs.current[index] = el}
-                        className="relative flex items-center justify-center w-[40px] h-[40px] rounded-full z-10 transition-colors duration-300"
-                        style={{ color: isItemActive ? 'transparent' : undefined }}
+                        className={`flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors ${isItemActive
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                            }`}
+                        aria-label={item.label}
                     >
-                        <IconComp
-                            className="w-[18px] h-[18px] transition-all duration-300"
-                            style={{
-                                color: isItemActive ? 'transparent' : '#d1d5db',
-                                transform: isItemActive ? 'scale(0)' : 'scale(1)',
-                                transition: 'color 0.3s ease, transform 0.3s ease',
-                            }}
-                        />
+                        <IconComp className="w-[18px] h-[18px]" />
+                        <span className="mt-1 text-[10px] font-semibold leading-none">{item.label}</span>
                     </Link>
                 );
-            })}
+                })}
+            </nav>
         </div>
     );
 };
@@ -170,7 +64,6 @@ const BottomNav = ({ currentPath }) => {
 const AppLayout = ({ children }) => {
     const { logout } = useAuth();
     const location = useLocation();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const isActive = (path) => location.pathname === path;
     const shouldHideHeader = location.pathname === ROUTES.RENTALS || location.pathname === ROUTES.MAPS || location.pathname === ROUTES.CHAT || location.pathname === ROUTES.HOME;
@@ -256,7 +149,7 @@ const AppLayout = ({ children }) => {
                 )}
 
                 {/* --- Main Content --- */}
-                <main className="grow p-1 md:p-8 overflow-y-auto">
+                <main className="grow    overflow-y-auto">
                     {children}
                 </main>
 

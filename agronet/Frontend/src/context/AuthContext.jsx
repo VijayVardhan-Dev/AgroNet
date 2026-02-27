@@ -13,21 +13,26 @@ export const AuthProvider = ({ children }) => {
     const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const refreshUserProfile = async (uid = auth.currentUser?.uid) => {
+        if (!uid) {
+            setUserProfile(null);
+            return null;
+        }
+
+        try {
+            const profile = await getUserProfile(uid);
+            setUserProfile(profile || null);
+            return profile || null;
+        } catch (error) {
+            console.error("Error refreshing user profile:", error);
+            return null;
+        }
+    };
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
-                // Fetch extra user details from Firestore
-                try {
-                    const profile = await getUserProfile(currentUser.uid);
-                    if (profile) {
-                        setUserProfile(profile);
-                    } else {
-                        // If no profile exists yet (e.g. fresh signup not yet handled), we might create one or wait
-                        // For now, just set user. Creation usually happens at signup.
-                    }
-                } catch (error) {
-                    console.error("Error fetching user profile in auth context:", error);
-                }
+                await refreshUserProfile(currentUser.uid);
             } else {
                 setUserProfile(null);
             }
@@ -73,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, userProfile, loading, signup, login, googleSignIn, logout }}>
+        <AuthContext.Provider value={{ user, userProfile, loading, signup, login, googleSignIn, logout, refreshUserProfile }}>
             {!loading && children}
         </AuthContext.Provider>
     );

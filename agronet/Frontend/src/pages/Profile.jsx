@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateUserProfile } from "../services/userService";
 
 const Profile = () => {
-    const { user, userProfile, logout } = useAuth();
+    const { user, userProfile, logout, refreshUserProfile } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
 
@@ -16,6 +16,7 @@ const Profile = () => {
     const handleSave = async () => {
         try {
             await updateUserProfile(user.uid, formData);
+            await refreshUserProfile(user.uid);
             setIsEditing(false);
             alert("Profile updated successfully!");
         } catch (error) {
