@@ -461,7 +461,7 @@
 
     .pc-details.pc-details-bottom {
       top: auto;
-      bottom: 2em;
+      bottom: 0;
     }
 
     .pc-details h3 {
@@ -512,7 +512,7 @@
 
     .pc-details.pc-details-bottom {
       top: auto;
-      bottom: 1.5em;
+      bottom: 0;
     }
 
     .pc-details h3 {
@@ -565,7 +565,7 @@
     
     .pc-details.pc-details-bottom {
       top: auto;
-      bottom: 1em;
+      bottom: 0;
     }
 
     .pc-details p {

@@ -3,7 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import introImg from '../assets/images/intro1.webp';
 import tabletImg from '../assets/images/tablet.webp';
-import mobileImg from '../assets/images/mobile.webp';
+import mobileImg from '../assets/images/mobintro.webp';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -71,9 +71,9 @@ export const HeroZoom = ({ children }) => {
                     className="w-full h-full flex items-center justify-center will-change-transform"
                     style={{ transformOrigin: '50% 50%' }}
                 >
-                    <picture className="absolute w-[105%] h-[105%] max-w-none -translate-x-[2.0%] md:-translate-x-[1.1%]">
+                    <picture className="absolute w-[105%] h-[105%] max-w-none -translate-x-[0.3%] md:-translate-x-[1.1%]">
                         <source media="(max-width: 640px)" srcSet={mobileImg} />
-                        <source media="(max-width: 1024px)" srcSet={mobileImg} />
+                        <source media="(max-width: 1024px)" srcSet={tabletImg} />
                         <img
                             ref={maskImageRef}
                             src={introImg}

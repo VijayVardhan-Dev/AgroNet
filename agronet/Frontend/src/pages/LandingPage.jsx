@@ -118,92 +118,91 @@ const LandingPage = () => {
                         Dedicated to building the future of agriculture with innovative, modern web technologies.
                     </p>
 
-                    <div className="w-full overflow-x-auto pb-8 -mx-4 px-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 no-scrollbar">
-                        <div className="flex justify-start md:justify-center gap-6 md:gap-8 w-max md:w-full max-w-6xl mx-auto perspective-1000">
-                            <div className="w-64 shrink-0 mt-4 md:mt-0">
-                                <ProfileCard
-                                    name="Hemant Kumar"
-                                    title="Lead Developer"
-                                    handle="hemant"
-                                    status="Online"
-                                    contactText="Contact Me"
-                                    avatarUrl="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=256&auto=format&fit=crop"
-                                    miniAvatarUrl="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=64&auto=format&fit=crop"
-                                    showUserInfo={false}
-                                    enableTilt={true}
-                                    enableMobileTilt={false}
-                                    detailsPosition="bottom"
-                                    onContactClick={() => console.log('Contact clicked')}
-                                    behindGlowColor="rgba(22, 163, 74, 0.4)"
-                                    behindGlowEnabled
-                                    innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
-                                    iconUrl={overlayicon}
-                                />
-                            </div>
-                            <div className="w-64 shrink-0 mt-4 md:mt-0">
-                                <ProfileCard
-                                    name="Vijay Vardhan"
-                                    title="UI/UX Engineer"
-                                    handle="vijay"
-                                    status="Active"
-                                    contactText="Contact Me"
-                                    avatarUrl={vardhan}
-                                    miniAvatarUrl="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?q=80&w=64&auto=format&fit=crop"
-                                    showUserInfo={false}
-                                    enableTilt={true}
-                                    enableMobileTilt={false}
-                                    imageFill={true}
-                                    detailsPosition="bottom"
-                                    onContactClick={() => console.log('Contact clicked')}
-                                    behindGlowColor="rgba(22, 163, 74, 0.4)"
-                                    behindGlowEnabled
-                                    innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
-                                    iconUrl={overlayicon}
-                                />
-                            </div>
-                            <div className="w-64 shrink-0 mt-4 md:mt-0">
-                                <ProfileCard
-                                    name="Ananya Rao"
-                                    title="Product Manager"
-                                    handle="ananya"
-                                    status="Active"
-                                    contactText="Contact Me"
-                                    avatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop"
-                                    miniAvatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=64&auto=format&fit=crop"
-                                    showUserInfo={false}
-                                    enableTilt={true}
-                                    detailsPosition="bottom"
-                                    enableMobileTilt={false}
-                                    onContactClick={() => console.log('Contact clicked')}
-                                    behindGlowColor="rgba(22, 163, 74, 0.4)"
-                                    behindGlowEnabled
-                                    innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
-                                    iconUrl={overlayicon}
-                                />
-                            </div>
-                            <div className="w-64 shrink-0 mt-4 md:mt-0 pr-4 md:pr-0">
-                                <ProfileCard
-                                    name="Karan Singh"
-                                    title="Agronomy Expert"
-                                    handle="karan"
-                                    status="Offline"
-                                    contactText="Contact Me"
-                                    avatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop"
-                                    miniAvatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=64&auto=format&fit=crop"
-                                    showUserInfo={false}
-                                    enableTilt={true}
-                                    enableMobileTilt={false}
-                                    detailsPosition="bottom"
-                                    onContactClick={() => console.log('Contact clicked')}
-                                    behindGlowColor="rgba(22, 163, 74, 0.4)"
-                                    behindGlowEnabled
-                                    innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
-                                    iconUrl={overlayicon}
-                                />
-                            </div>
+                    <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4 md:gap-8 w-full max-w-6xl mx-auto perspective-1000">
+                        <div className="w-full md:w-64">
+                            <ProfileCard
+                                name="Hemant Kumar"
+                                title="Lead Developer"
+                                handle="hemant"
+                                status="Online"
+                                contactText="Contact Me"
+                                avatarUrl="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=256&auto=format&fit=crop"
+                                miniAvatarUrl="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=64&auto=format&fit=crop"
+                                showUserInfo={false}
+                                enableTilt={true}
+                                enableMobileTilt={false}
+                                detailsPosition="bottom"
+                                onContactClick={() => console.log('Contact clicked')}
+                                behindGlowColor="rgba(22, 163, 74, 0.4)"
+                                behindGlowEnabled
+                                innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
+                                iconUrl={overlayicon}
+                            />
+                        </div>
+                        <div className="w-full md:w-64">
+                            <ProfileCard
+                                name="Vijay Vardhan"
+                                title="UI/UX Engineer"
+                                handle="vijay"
+                                status="Active"
+                                contactText="Contact Me"
+                                avatarUrl={vardhan}
+                                miniAvatarUrl="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?q=80&w=64&auto=format&fit=crop"
+                                showUserInfo={false}
+                                enableTilt={true}
+                                enableMobileTilt={false}
+                                imageFill={true}
+                                detailsPosition="bottom"
+                                onContactClick={() => console.log('Contact clicked')}
+                                behindGlowColor="rgba(22, 163, 74, 0.4)"
+                                behindGlowEnabled
+                                innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
+                                iconUrl={overlayicon}
+                            />
+                        </div>
+                        <div className="w-full md:w-64">
+                            <ProfileCard
+                                name="Ananya Rao"
+                                title="Product Manager"
+                                handle="ananya"
+                                status="Active"
+                                contactText="Contact Me"
+                                avatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop"
+                                miniAvatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=64&auto=format&fit=crop"
+                                showUserInfo={false}
+                                enableTilt={true}
+                                detailsPosition="bottom"
+                                enableMobileTilt={false}
+                                onContactClick={() => console.log('Contact clicked')}
+                                behindGlowColor="rgba(22, 163, 74, 0.4)"
+                                behindGlowEnabled
+                                innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
+                                iconUrl={overlayicon}
+                            />
+                        </div>
+                        <div className="w-full md:w-64">
+                            <ProfileCard
+                                name="Karan Singh"
+                                title="Agronomy Expert"
+                                handle="karan"
+                                status="Offline"
+                                contactText="Contact Me"
+                                avatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop"
+                                miniAvatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=64&auto=format&fit=crop"
+                                showUserInfo={false}
+                                enableTilt={true}
+                                enableMobileTilt={false}
+                                detailsPosition="bottom"
+                                onContactClick={() => console.log('Contact clicked')}
+                                behindGlowColor="rgba(22, 163, 74, 0.4)"
+                                behindGlowEnabled
+                                innerGradient="linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%)"
+                                iconUrl={overlayicon}
+                            />
                         </div>
                     </div>
                 </div>
+
             </section>
 
             <Footer />
