@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../routing/routes';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
@@ -17,6 +17,7 @@ const paddedIconString = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200
 
 const LandingPage = () => {
     const [isNavVisible, setIsNavVisible] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const { scrollY } = useScroll();
 
     useMotionValueEvent(scrollY, "change", (latest) => {
@@ -32,6 +33,13 @@ const LandingPage = () => {
 
     return (
         <div className="relative font-sans text-gray-800 bg-white min-h-screen">
+            {/* Loading Screen */}
+            {isLoading && (
+                <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 border-4 border-green-200 border-t-green-700 rounded-full animate-spin mb-6"></div>
+                    <p className="text-green-800 font-semibold tracking-wide text-sm uppercase">Loading AgroNet...</p>
+                </div>
+            )}
             {/* Overlay Navigation */}
             <div className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none transition-colors duration-300">
                 <motion.div
@@ -90,7 +98,7 @@ const LandingPage = () => {
             </HeroZoom>
 
             {/* Plant Growth Scrollytelling Section */}
-            <PlantGrowthScroll />
+            <PlantGrowthScroll onLoaded={() => setIsLoading(false)} />
 
             <WhatIsAgroNet />
 
@@ -98,7 +106,7 @@ const LandingPage = () => {
             <FeatureReveal />
 
             {/* Meet the Core Team Section */}
-            <section className="w-full py-24 bg-green-50 flex flex-col items-center justify-center relative overflow-hidden">
+            <section className="w-full py-24 bg-green-50 flex flex-col items-center justify-center relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-green-100 to-green-50 z-0"></div>
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#86efac_1px,transparent_1px),linear-gradient(to_bottom,#86efac_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_80%,transparent_110%)] opacity-40 z-0"></div>
 
@@ -110,7 +118,7 @@ const LandingPage = () => {
                         Dedicated to building the future of agriculture with innovative, modern web technologies.
                     </p>
 
-                    <div className="w-full overflow-x-auto pb-8 -mx-4 px-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 hidden-scrollbar">
+                    <div className="w-full overflow-x-auto pb-8 -mx-4 px-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 no-scrollbar">
                         <div className="flex justify-start md:justify-center gap-6 md:gap-8 w-max md:w-full max-w-6xl mx-auto perspective-1000">
                             <div className="w-64 shrink-0 mt-4 md:mt-0">
                                 <ProfileCard

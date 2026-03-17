@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useScroll, useSpring } from 'framer-motion';
 
-export const PlantGrowthScroll = () => {
+export const PlantGrowthScroll = ({ onLoaded }) => {
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const canvasRef = useRef(null);
@@ -31,6 +31,7 @@ export const PlantGrowthScroll = () => {
                 // Filter out any failed loads
                 setImages(loadedImgs.filter(Boolean));
                 setLoading(false);
+                if (onLoaded) onLoaded();
             }
         };
 

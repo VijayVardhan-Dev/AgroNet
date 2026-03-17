@@ -55,7 +55,7 @@ export const HeroZoom = ({ children }) => {
     }, []);
 
     return (
-        <div ref={containerRef} className="h-[100svh] w-full relative overflow-hidden bg-white">
+        <div ref={containerRef} className="h-dvh w-full relative overflow-hidden bg-white">
             {/* The revealed content stays behind the zooming image */}
             <div className="absolute inset-0 z-0 w-full h-full flex flex-col overflow-y-auto hidden-scrollbar pointer-events-auto">
                 {/* Wrapper that animates in */}
