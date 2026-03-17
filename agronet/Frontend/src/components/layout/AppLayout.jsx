@@ -16,7 +16,8 @@ import {
     ShoppingCart,
     Store,
     Truck,
-    ClipboardList
+    ClipboardList,
+    Mic
 } from 'lucide-react';
 import { useAuth } from "../../context/AuthContext";
 import logo from '../../assets/images/logo.png';
@@ -24,9 +25,9 @@ import logo from '../../assets/images/logo.png';
 // --- Nav items config ---
 const NAV_ITEMS = [
     { route: 'HOME', icon: HomeIcon, label: 'Home' },
-    { route: 'RENTALS', icon: Heart, label: 'Wishlist' },
-    { route: 'CART', icon: ShoppingCart, label: 'Cart' },
-    { route: 'ORDERS', icon: ClipboardList, label: 'Orders' },
+    { route: 'RENTALS', icon: Key, label: 'Rentals' },
+    { route: 'MAPS', icon: Map, label: 'Maps' },
+    { route: 'CHAT', icon: MessageSquare, label: 'Chat Bot' },
     { route: 'PROFILE', icon: User, label: 'Profile' },
 ];
 
@@ -39,22 +40,22 @@ const BottomNav = ({ currentPath }) => {
                 style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
             >
                 {NAV_ITEMS.map((item) => {
-                const IconComp = item.icon;
-                const isItemActive = ROUTES[item.route] === currentPath;
-                return (
-                    <Link
-                        key={item.route}
-                        to={ROUTES[item.route]}
-                        className={`flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors ${isItemActive
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                            }`}
-                        aria-label={item.label}
-                    >
-                        <IconComp className="w-[18px] h-[18px]" />
-                        <span className="mt-1 text-[10px] font-semibold leading-none">{item.label}</span>
-                    </Link>
-                );
+                    const IconComp = item.icon;
+                    const isItemActive = ROUTES[item.route] === currentPath;
+                    return (
+                        <Link
+                            key={item.route}
+                            to={ROUTES[item.route]}
+                            className={`flex flex-col items-center justify-center rounded-xl py-1.5 transition-colors ${isItemActive
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                                }`}
+                            aria-label={item.label}
+                        >
+                            <IconComp className="w-[18px] h-[18px]" />
+                            <span className="mt-1 text-[10px] font-semibold leading-none">{item.label}</span>
+                        </Link>
+                    );
                 })}
             </nav>
         </div>
@@ -66,7 +67,7 @@ const AppLayout = ({ children }) => {
     const location = useLocation();
 
     const isActive = (path) => location.pathname === path;
-    const shouldHideHeader = location.pathname === ROUTES.RENTALS || location.pathname === ROUTES.MAPS || location.pathname === ROUTES.CHAT || location.pathname === ROUTES.HOME;
+    const shouldHideHeader = location.pathname === ROUTES.LANDING || location.pathname === ROUTES.RENTALS || location.pathname === ROUTES.MAPS || location.pathname === ROUTES.CHAT || location.pathname === ROUTES.HOME;
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans text-gray-800 flex">
@@ -84,24 +85,26 @@ const AppLayout = ({ children }) => {
 
                 {/* Navigation Links */}
                 <nav className="flex-1 space-y-1 overflow-y-auto pr-2 no-scrollbar">
-                    <div className="space-y-1">
-                        <SidebarItem to={ROUTES.MAPS} icon={<Map size={20} />} label="Maps" active={isActive(ROUTES.MAPS)} />
-                        <SidebarItem to={ROUTES.CHAT} icon={<MessageSquare size={20} />} label="AI Assistant" active={isActive(ROUTES.CHAT)} />
-                        <SidebarItem to={ROUTES.VOICE} icon={<Bell size={20} />} label="Voice" active={isActive(ROUTES.VOICE)} />
-                    </div>
-
-                    <div className="pt-6 pb-2">
+                    <div className="pb-2">
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hidden lg:block">Market</p>
-                        <SidebarItem to={ROUTES.HOME} icon={<Store size={20} />} label="Shop Crops" active={isActive(ROUTES.HOME)} />
+                        <SidebarItem to={ROUTES.HOME} icon={<HomeIcon size={20} />} label="Home Page" active={isActive(ROUTES.HOME)} />
                         <SidebarItem to={ROUTES.RENTALS} icon={<Key size={20} />} label="Rentals" active={isActive(ROUTES.RENTALS)} />
                         <SidebarItem to={ROUTES.ORDERS} icon={<ShoppingBag size={20} />} label="My Orders" active={isActive(ROUTES.ORDERS)} />
                         <SidebarItem to="#" icon={<Heart size={20} />} label="Wishlist" />
                     </div>
 
                     <div className="pt-6 pb-2">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hidden lg:block">Resources</p>
+                        <SidebarItem to={ROUTES.MAPS} icon={<Map size={20} />} label="Maps" active={isActive(ROUTES.MAPS)} />
+                        <SidebarItem to={ROUTES.CHAT} icon={<MessageSquare size={20} />} label="AI Chatbot" active={isActive(ROUTES.CHAT)} />
+                        <SidebarItem to={ROUTES.VOICE} icon={<Mic size={20} />} label="Voice" active={isActive(ROUTES.VOICE)} />
+                        <SidebarItem to="#" icon={<Bell size={20} />} label="Notifications" />
+                    </div>
+
+                    <div className="pt-6 pb-2">
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 hidden lg:block">Work</p>
                         <SidebarItem to={ROUTES.FARMER_DASHBOARD} icon={<LayoutDashboard size={20} />} label="Farmer Dashboard" active={isActive(ROUTES.FARMER_DASHBOARD)} />
-                        <SidebarItem to={ROUTES.DELIVERIES} icon={<Truck size={20} />} label="Deliveries (Driver)" active={isActive(ROUTES.DELIVERIES)} />
+                        <SidebarItem to={ROUTES.DELIVERIES} icon={<Truck size={20} />} label="Deliveries" active={isActive(ROUTES.DELIVERIES)} />
                     </div>
                 </nav>
 
@@ -128,7 +131,7 @@ const AppLayout = ({ children }) => {
 
                 {/* --- Desktop Header --- */}
                 {!shouldHideHeader && (
-                    <header className="hidden md:flex justify-between items-center px-8 py-5 bg-gray-50 sticky top-0 z-20">
+                    <header className="hidden md:flex justify-between items-center bg-white sticky top-0 z-20">
                         <div className="flex-1 max-w-2xl">
                             <div className="relative">
                                 <input
