@@ -17,4 +17,10 @@ export const ROUTES = {
     FARMER_DASHBOARD: "/farmer-dashboard",
     PRODUCT_DETAILS: "/product/:type/:id",
     CART: "/cart",
+    WISHLIST: "/wishlist",
+    NOTIFICATIONS: "/notifications",
+    HELP: "/help",
+    FEEDBACK: "/feedback",
+    WEATHER: "/weather",
+    GOVT: "/govt",
 };

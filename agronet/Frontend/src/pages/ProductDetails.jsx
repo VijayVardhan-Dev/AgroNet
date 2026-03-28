@@ -9,7 +9,6 @@ import {
   Heart, 
   MapPin, 
   MessageSquare,
-//   Agriculture, // Note: Using Lucide equivalents for Material Icons
   Diamond,
   Plus,
   Minus,
@@ -20,11 +19,13 @@ import {
 import { getCropById } from '../services/cropService';
 import { getEquipmentById } from '../services/equipmentService';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const ProductDetails = () => {
   const { type, id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -213,8 +214,11 @@ const ProductDetails = () => {
 
                 {/* Desktop Add to Cart Button */}
                 <div className="hidden md:flex gap-4 pt-5">
-                    <button className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-slate-500 hover:bg-gray-50 transition-colors">
-                        <Heart size={18} />
+                    <button 
+                        onClick={() => toggleWishlist(product)}
+                        className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-colors ${isInWishlist(product.id) ? 'bg-red-50 border-red-100 text-red-500' : 'border-gray-200 text-slate-500 hover:bg-gray-50'}`}
+                    >
+                        <Heart size={18} className={isInWishlist(product.id) ? "fill-red-500" : ""} />
                     </button>
                     <button 
                         onClick={handleAddToCart}
@@ -232,8 +236,11 @@ const ProductDetails = () => {
       {/* Mobile Fixed Footer Actions */}
       <footer className="md:hidden fixed bottom-0 left-0 right-0 p-4 pb-8 bg-white/90 backdrop-blur-md border-t border-gray-100 z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
         <div className="max-w-lg mx-auto flex gap-3">
-          <button className="w-14 h-14 bg-white rounded-xl border border-gray-200 flex flex-shrink-0 items-center justify-center text-slate-500 hover:bg-gray-50 shadow-sm">
-            <Share2 size={20} />
+          <button 
+            onClick={() => toggleWishlist(product)}
+            className={`w-14 h-14 bg-white rounded-xl border flex flex-shrink-0 items-center justify-center shadow-sm transition-colors ${isInWishlist(product.id) ? 'bg-red-50 border-red-100 text-red-500' : 'border-gray-200 text-slate-500 hover:bg-gray-50'}`}
+          >
+            <Heart size={20} className={isInWishlist(product.id) ? "fill-red-500" : ""} />
           </button>
           <button 
             onClick={handleAddToCart}

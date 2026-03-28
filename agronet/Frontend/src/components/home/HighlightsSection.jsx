@@ -11,6 +11,8 @@ import {
   ThermometerSun,
   Wind
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../routing/routes';
 
 const TOTAL_SLIDES = 3;
 
@@ -140,16 +142,22 @@ const WeatherCard = ({
   );
 };
 
-const WeatherSlide = (props) => (
-  <div className="w-full shrink-0 min-h-[218px] p-5 text-white relative overflow-hidden bg-gradient-to-br from-[#0B6B68] via-[#0C7873] to-[#125B95]">
-    <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-white/15 blur-2xl"></div>
-    <div className="absolute -bottom-20 -left-14 w-52 h-52 rounded-full bg-cyan-200/25 blur-3xl"></div>
-    <div className="absolute top-4 right-4 text-white/25">
-      <Sparkles className="w-5 h-5" />
+const WeatherSlide = (props) => {
+  const navigate = useNavigate();
+  return (
+    <div 
+      onClick={() => navigate(ROUTES.WEATHER)} 
+      className="w-full shrink-0 min-h-[218px] p-5 text-white relative overflow-hidden bg-gradient-to-br from-[#0B6B68] via-[#0C7873] to-[#125B95] cursor-pointer hover:opacity-95 transition-opacity"
+    >
+      <div className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-white/15 blur-2xl"></div>
+      <div className="absolute -bottom-20 -left-14 w-52 h-52 rounded-full bg-cyan-200/25 blur-3xl"></div>
+      <div className="absolute top-4 right-4 text-white/25">
+        <Sparkles className="w-5 h-5" />
+      </div>
+      <WeatherCard {...props} compact />
     </div>
-    <WeatherCard {...props} compact />
-  </div>
-);
+  );
+};
 
 const HighlightsSection = ({
   loadingWeather,
@@ -162,6 +170,8 @@ const HighlightsSection = ({
   onSlideChange,
   promoImage
 }) => {
+  const navigate = useNavigate();
+
   const goToNextSlide = () => {
     onSlideChange((currentSlide + 1) % TOTAL_SLIDES);
   };
@@ -187,11 +197,14 @@ const HighlightsSection = ({
               onRefreshWeather={onRefreshWeather}
             />
 
-            <div className="w-full shrink-0 min-h-[218px] bg-gradient-to-br from-[#166534] via-[#15803D] to-[#22C55E] p-5 text-white">
+            <div 
+              onClick={() => navigate(ROUTES.GOVT)}
+              className="w-full shrink-0 min-h-[218px] bg-gradient-to-br from-[#166534] via-[#15803D] to-[#22C55E] p-5 text-white cursor-pointer hover:opacity-95 transition-opacity"
+            >
               <p className="text-[11px] uppercase tracking-[0.18em] text-white/80">Government Scheme</p>
               <h3 className="mt-2 text-lg font-bold leading-tight">PM-KISAN Direct Benefit Transfer</h3>
               <p className="mt-2 text-sm text-white/85">Get Rs 6,000/year direct income support for farmers.</p>
-              <button className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-50 transition-colors">
+              <button className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-50 transition-colors pointer-events-none">
                 <Sprout className="w-4 h-4" />
                 Learn More
               </button>
@@ -228,9 +241,12 @@ const HighlightsSection = ({
             className="flex h-full transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
-            <div className="w-full h-full shrink-0 p-8 text-white relative overflow-hidden bg-gradient-to-br from-[#0B6B68] via-[#0C7873] to-[#125B95]">
-              <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-white/15 blur-3xl"></div>
-              <div className="absolute -bottom-24 left-1/3 w-72 h-72 rounded-full bg-cyan-200/20 blur-3xl"></div>
+            <div 
+              onClick={() => navigate(ROUTES.WEATHER)}
+              className="w-full h-full shrink-0 p-8 text-white relative overflow-hidden bg-gradient-to-br from-[#0B6B68] via-[#0C7873] to-[#125B95] cursor-pointer hover:opacity-95 transition-opacity group"
+            >
+              <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-white/15 blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+              <div className="absolute -bottom-24 left-1/3 w-72 h-72 rounded-full bg-cyan-200/20 blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
               <div className="relative z-10 grid grid-cols-[1.2fr_0.8fr] gap-8 h-full">
                 <WeatherCard
                   loadingWeather={loadingWeather}
@@ -238,31 +254,34 @@ const HighlightsSection = ({
                   weatherUpdatedAt={weatherUpdatedAt}
                   errorWeather={errorWeather}
                   weather={weather}
-                  onRefreshWeather={onRefreshWeather}
+                  onRefreshWeather={(e) => { e.stopPropagation(); onRefreshWeather(); }}
                 />
                 <div className="self-center justify-self-end max-w-[280px] rounded-2xl bg-white/12 ring-1 ring-white/20 backdrop-blur-sm p-5">
                   <p className="text-[11px] uppercase tracking-[0.16em] text-white/75">Farm Advisory</p>
                   <h4 className="mt-2 text-xl font-bold leading-tight">Plan irrigation around humidity and wind trend.</h4>
-                  <p className="mt-3 text-sm text-white/80">Use this panel as a quick daily snapshot before field activity.</p>
+                  <p className="mt-3 text-sm text-white/80">Click for full 7-day agricultural weather forecast.</p>
                 </div>
               </div>
             </div>
 
-            <div className="w-full h-full shrink-0 relative overflow-hidden bg-gradient-to-br from-[#166534] via-[#15803D] to-[#22C55E] p-8 text-white">
-              <div className="absolute top-8 right-8 w-40 h-40 rounded-full border border-white/20"></div>
-              <div className="absolute -bottom-20 -right-16 w-72 h-72 rounded-full bg-lime-300/20 blur-3xl"></div>
+            <div 
+              onClick={() => navigate(ROUTES.GOVT)}
+              className="w-full h-full shrink-0 relative overflow-hidden bg-gradient-to-br from-[#166534] via-[#15803D] to-[#22C55E] p-8 text-white cursor-pointer hover:opacity-95 transition-opacity group"
+            >
+              <div className="absolute top-8 right-8 w-40 h-40 rounded-full border border-white/20 group-hover:scale-105 transition-transform duration-700"></div>
+              <div className="absolute -bottom-20 -right-16 w-72 h-72 rounded-full bg-lime-300/20 blur-3xl group-hover:scale-105 transition-transform duration-700"></div>
               <div className="relative z-10 h-full flex items-center justify-between gap-10">
                 <div className="max-w-xl">
                   <p className="text-[12px] uppercase tracking-[0.2em] text-white/80">Government Scheme</p>
                   <h3 className="mt-3 text-4xl font-black leading-tight">PM-KISAN Direct Benefit Transfer</h3>
                   <p className="mt-4 text-base text-white/90">Eligible farmers can receive Rs 6,000 every year directly in their account.</p>
-                  <button className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-50 transition-colors">
+                  <button className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-50 transition-colors pointer-events-none">
                     <Sprout className="w-4 h-4" />
                     Check Eligibility
                   </button>
                 </div>
                 <div className="max-w-[260px] rounded-2xl bg-black/15 border border-white/15 p-5">
-                  <p className="text-sm text-white/85">Fast updates. Direct support. Farmer-first benefits with minimal paperwork.</p>
+                  <p className="text-sm text-white/85">Click to discover all verified financial aid, insurance, and organic farming benefits.</p>
                 </div>
               </div>
             </div>

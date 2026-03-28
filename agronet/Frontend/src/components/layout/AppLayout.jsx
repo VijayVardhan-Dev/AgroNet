@@ -89,7 +89,7 @@ const AppLayout = ({ children }) => {
                         <SidebarItem to={ROUTES.HOME} icon={<HomeIcon size={20} />} label="Home Page" active={isActive(ROUTES.HOME)} />
                         <SidebarItem to={ROUTES.RENTALS} icon={<Key size={20} />} label="Rentals" active={isActive(ROUTES.RENTALS)} />
                         <SidebarItem to={ROUTES.ORDERS} icon={<ShoppingBag size={20} />} label="My Orders" active={isActive(ROUTES.ORDERS)} />
-                        <SidebarItem to="#" icon={<Heart size={20} />} label="Wishlist" />
+                        <SidebarItem to={ROUTES.WISHLIST} icon={<Heart size={20} />} label="Wishlist" active={isActive(ROUTES.WISHLIST)} />
                     </div>
 
                     <div className="pt-6 pb-2">
@@ -97,7 +97,7 @@ const AppLayout = ({ children }) => {
                         <SidebarItem to={ROUTES.MAPS} icon={<Map size={20} />} label="Maps" active={isActive(ROUTES.MAPS)} />
                         <SidebarItem to={ROUTES.CHAT} icon={<MessageSquare size={20} />} label="AI Chatbot" active={isActive(ROUTES.CHAT)} />
                         <SidebarItem to={ROUTES.VOICE} icon={<Mic size={20} />} label="Voice" active={isActive(ROUTES.VOICE)} />
-                        <SidebarItem to="#" icon={<Bell size={20} />} label="Notifications" />
+                        <SidebarItem to={ROUTES.NOTIFICATIONS} icon={<Bell size={20} />} label="Notifications" active={isActive(ROUTES.NOTIFICATIONS)} />
                     </div>
 
                     <div className="pt-6 pb-2">
@@ -109,13 +109,13 @@ const AppLayout = ({ children }) => {
 
                 {/* Bottom Actions */}
                 <div className="pt-6 border-t border-gray-100 space-y-1">
-                    <SidebarItem to="#" icon={<MessageSquare size={20} />} label="Feedback" />
-                    <SidebarItem to="#" icon={<HelpCircle size={20} />} label="Help" />
+                    <SidebarItem to={ROUTES.FEEDBACK} icon={<MessageSquare size={20} />} label="Feedback" active={isActive(ROUTES.FEEDBACK)} />
+                    <SidebarItem to={ROUTES.HELP} icon={<HelpCircle size={20} />} label="Help" active={isActive(ROUTES.HELP)} />
 
                     <div className="flex flex-col lg:flex-row items-center justify-center lg:justify-between mt-4 pt-4 gap-4 lg:gap-0">
-                        <div className="flex items-center gap-2">
+                        <Link to={ROUTES.PROFILE} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                             <User className="w-8 h-8 p-1 bg-gray-100 rounded-full text-gray-600" />
-                        </div>
+                        </Link>
                         <button onClick={() => logout()} className="text-gray-400 hover:text-red-600 transition-colors" title="Logout">
                             <LogOut size={20} />
                         </button>
@@ -129,7 +129,7 @@ const AppLayout = ({ children }) => {
 
 
                 {/* --- Main Content --- */}
-                <main className="grow    overflow-y-auto">
+                <main className="grow overflow-y-auto pb-20 md:pb-0">
                     {children}
                 </main>
 

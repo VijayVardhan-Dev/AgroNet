@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { updateUserProfile } from "../services/userService";
+import { 
+    ShoppingBag, Bell, Heart, 
+    LayoutDashboard, Truck, HelpCircle, MessageSquare, LogOut, ChevronRight 
+} from "lucide-react";
+import { ROUTES } from "../routing/routes";
 
 const Profile = () => {
     const { user, userProfile, logout, refreshUserProfile } = useAuth();
@@ -41,44 +47,72 @@ const Profile = () => {
         </div>
     );
 
-    return (
-        <div className="p-4 bg-white min-h-screen font-sans">
-            {/* <div className="flex justify-between items-center mb-10">
-                <h1 className="text-3xl  text-gray-900 tracking-tight">Profile</h1>
-                <button 
-                    onClick={logout} 
-                    className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
-                >
-                    Logout
-                </button>
-            </div> */}
+    const navLinks = [
+        { to: ROUTES.ORDERS, icon: ShoppingBag, label: "My Orders" },
+        { to: ROUTES.WISHLIST, icon: Heart, label: "Wishlist" },
+        { to: ROUTES.NOTIFICATIONS, icon: Bell, label: "Notifications" },
+        { to: ROUTES.FARMER_DASHBOARD, icon: LayoutDashboard, label: "Farmer Dashboard" },
+        { to: ROUTES.DELIVERIES, icon: Truck, label: "Deliveries" },
+    ];
 
+    const secondaryLinks = [
+        { to: ROUTES.FEEDBACK, icon: MessageSquare, label: "Feedback" },
+        { to: ROUTES.HELP, icon: HelpCircle, label: "Help & Support" },
+    ];
+
+    return (
+        <div className="p-4 bg-white min-h-screen font-sans pb-32">
             <div className="space-y-10">
                 {/* Profile Picture Section */}
-                <div className="flex items-start space-x-6 pb-10 border-b border-gray-100">
+                <div className="flex items-start space-x-6 pb-6 border-b border-gray-100">
                     <img 
                         src={formData.profilePic || user?.photoURL || "https://placehold.co/150"} 
                         alt="Profile" 
                         className="w-24 h-24 rounded-full object-cover border border-gray-200 shadow-sm"
                     />
-                    {isEditing ? (
-                        <div className="flex-1 max-w-md">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo URL</label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-black focus:border-black transition-all outline-none"
-                                value={formData.profilePic || ""}
-                                onChange={(e) => setFormData({ ...formData, profilePic: e.target.value })}
-                                placeholder="https://..."
-                            />
-                        </div>
-                    ) : (
+                    {!isEditing && (
                         <div className="flex flex-col justify-center h-24">
                             <h2 className="text-2xl font-medium text-gray-900">{formData.fullName || "User"}</h2>
                             <p className="text-gray-500 mt-1">{formData.email}</p>
                         </div>
                     )}
                 </div>
+
+                {/* Mobile Navigation Links — above personal info */}
+                <div className="md:hidden">
+                    <div className="space-y-1">
+                        {navLinks.map(link => {
+                            const Icon = link.icon;
+                            return (
+                                <Link
+                                    key={link.to}
+                                    to={link.to}
+                                    className="flex items-center justify-between px-4 py-3.5 rounded-xl text-slate-700 hover:bg-gray-50 transition-colors group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Icon size={20} className="text-slate-500 group-hover:text-slate-700" />
+                                        <span className="text-sm font-medium">{link.label}</span>
+                                    </div>
+                                    <ChevronRight size={16} className="text-slate-300" />
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Profile Photo Edit (only in editing mode) */}
+                {isEditing && (
+                    <div className="pb-10 border-b border-gray-100">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo URL</label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-black focus:border-black transition-all outline-none"
+                            value={formData.profilePic || ""}
+                            onChange={(e) => setFormData({ ...formData, profilePic: e.target.value })}
+                            placeholder="https://..."
+                        />
+                    </div>
+                )}
 
                 {/* Personal Information */}
                 <div>
@@ -199,25 +233,37 @@ const Profile = () => {
                     )}
                 </div>
 
-                {/* Quick Links */}
-                <div className="pt-10 border-t border-gray-100">
-                    <h3 className="text-lg font-medium text-gray-900 mb-5">Quick Links</h3>
-                    <div className="flex gap-4">
-                        <a 
-                            href="/orders" 
-                            className="inline-flex items-center px-5 py-3 bg-white hover:bg-gray-50 text-gray-900 font-medium rounded-md transition-colors border border-gray-200 shadow-sm"
-                        >
-                            View My Orders
-                        </a>
-                        {formData.roles?.isDriver && (
-                            <a 
-                                href="/deliveries" 
-                                className="inline-flex items-center px-5 py-3 bg-white hover:bg-gray-50 text-gray-900 font-medium rounded-md transition-colors border border-gray-200 shadow-sm"
-                            >
-                                Driver Dashboard
-                            </a>
-                        )}
+                {/* Feedback & Help — at the bottom */}
+                <div className="pt-6 border-t border-gray-100 md:hidden">
+                    <div className="space-y-1">
+                        {secondaryLinks.map(link => {
+                            const Icon = link.icon;
+                            return (
+                                <Link
+                                    key={link.to}
+                                    to={link.to}
+                                    className="flex items-center justify-between px-4 py-3.5 rounded-xl text-slate-700 hover:bg-gray-50 transition-colors group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Icon size={20} className="text-slate-500 group-hover:text-slate-700" />
+                                        <span className="text-sm font-medium">{link.label}</span>
+                                    </div>
+                                    <ChevronRight size={16} className="text-slate-300" />
+                                </Link>
+                            );
+                        })}
                     </div>
+                </div>
+
+                {/* Logout */}
+                <div className="pt-6 border-t border-gray-100">
+                    <button 
+                        onClick={logout} 
+                        className="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors w-full md:w-auto"
+                    >
+                        <LogOut size={20} />
+                        <span className="text-sm font-medium">Log Out</span>
+                    </button>
                 </div>
             </div>
         </div>

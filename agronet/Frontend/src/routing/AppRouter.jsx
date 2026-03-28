@@ -23,6 +23,12 @@ const FarmerDashboard = lazy(() => import("../pages/FarmerDashboard"));
 const ProductDetails = lazy(() => import("../pages/ProductDetails"));
 const Cart = lazy(() => import("../pages/Cart"));
 const DeliveryDetails = lazy(() => import("../pages/DeliveryDetails"));
+const Wishlist = lazy(() => import("../pages/Wishlist"));
+const Notifications = lazy(() => import("../pages/Notifications"));
+const Help = lazy(() => import("../pages/Help"));
+const Feedback = lazy(() => import("../pages/Feedback"));
+const Weather = lazy(() => import("../pages/Weather"));
+const Govt = lazy(() => import("../pages/Govt"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 // Protected Route Component
@@ -137,6 +143,26 @@ const AppRouter = () => {
                 }
             />
             <Route
+                path={ROUTES.WEATHER}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Weather />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path={ROUTES.GOVT}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Govt />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path={ROUTES.PROFILE}
                 element={
                     <ProtectedRoute>
@@ -207,6 +233,50 @@ const AppRouter = () => {
                     <ProtectedRoute>
                         <RouteWithLayout>
                             <Cart />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path={ROUTES.WISHLIST}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Wishlist />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+            
+            <Route
+                path={ROUTES.NOTIFICATIONS}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Notifications />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+            
+            <Route
+                path={ROUTES.HELP}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Help />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path={ROUTES.FEEDBACK}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <Feedback />
                         </RouteWithLayout>
                     </ProtectedRoute>
                 }

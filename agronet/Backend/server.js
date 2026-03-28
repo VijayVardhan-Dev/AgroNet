@@ -3,8 +3,19 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const admin = require('firebase-admin');
 const geofire = require('geofire-common');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 
 dotenv.config();
+
+// --- Cloudinary Setup ---
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dz9aw5ik6',
+    api_key: process.env.CLOUDINARY_API_KEY || '216384382679428',
+    api_secret: process.env.CLOUDINARY_API_SECRET || 'arv_zdlCkOQSqaK4IpzqXu7XYqQ',
+});
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
 // --- Firebase Admin Setup ---
 try {
@@ -123,6 +134,43 @@ startDeliveryDispatcher();
 // --- Routes ---
 app.get('/', (req, res) => {
     res.send('AgroNet Backend is Running');
+});
+
+// --- Image Upload Route ---
+app.post('/api/upload', upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+
+        // Upload buffer to Cloudinary
+        const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'agronet',
+                    resource_type: 'image',
+                    transformation: [
+                        { width: 800, height: 800, crop: 'limit', quality: 'auto' }
+                    ]
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            stream.end(req.file.buffer);
+        });
+
+        res.json({
+            url: result.secure_url,
+            publicId: result.public_id,
+            width: result.width,
+            height: result.height,
+        });
+    } catch (error) {
+        console.error('Upload Error:', error);
+        res.status(500).json({ error: 'Image upload failed' });
+    }
 });
 
 app.listen(port, () => {

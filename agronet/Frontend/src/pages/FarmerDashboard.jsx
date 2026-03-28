@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getFarmerCrops, deleteCrop, addCrop } from '../services/cropService';
 import { getFarmerEquipment, deleteEquipment, addEquipment } from '../services/equipmentService';
 import { getUserOrders, updateOrderStatus } from '../services/orderService';
-import { Trash2, Plus, Package } from 'lucide-react';
+import { uploadImage } from '../services/uploadService';
+import { Trash2, Plus, Package, Camera, Loader2 } from 'lucide-react';
 
 const FarmerDashboard = () => {
     const { user, userProfile } = useAuth();
@@ -16,6 +17,13 @@ const FarmerDashboard = () => {
     // Form States
     const [showAddCrop, setShowAddCrop] = useState(false);
     const [showAddEquip, setShowAddEquip] = useState(false);
+    const [cropImageFile, setCropImageFile] = useState(null);
+    const [cropImagePreview, setCropImagePreview] = useState(null);
+    const [equipImageFile, setEquipImageFile] = useState(null);
+    const [equipImagePreview, setEquipImagePreview] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const cropFileRef = useRef(null);
+    const equipFileRef = useRef(null);
 
     useEffect(() => {
         if (userProfile?.roles?.isFarmer) {
@@ -54,33 +62,69 @@ const FarmerDashboard = () => {
     const handleAddCropSubmit = async (e) => {
         e.preventDefault();
         const form = e.target;
+        setUploading(true);
+
+        let imageUrl = 'https://placehold.co/300x200?text=Crop';
+        try {
+            if (cropImageFile) {
+                imageUrl = await uploadImage(cropImageFile);
+            }
+        } catch (err) {
+            console.error('Image upload failed, using placeholder:', err);
+        }
+
         const cropData = {
             name: form.name.value,
             price: form.price.value,
             category: form.category.value,
             quantity: form.quantity.value,
             description: form.description.value,
-            image: "https://placehold.co/300x200?text=Crop" // Placeholder
+            image: imageUrl
         };
         await addCrop(cropData, userProfile);
         setShowAddCrop(false);
+        setCropImageFile(null);
+        setCropImagePreview(null);
+        setUploading(false);
         fetchData();
     };
 
     const handleAddEquipSubmit = async (e) => {
         e.preventDefault();
         const form = e.target;
+        setUploading(true);
+
+        let imageUrl = 'https://placehold.co/300x200?text=Equipment';
+        try {
+            if (equipImageFile) {
+                imageUrl = await uploadImage(equipImageFile);
+            }
+        } catch (err) {
+            console.error('Image upload failed, using placeholder:', err);
+        }
+
         const equipData = {
             name: form.name.value,
             model: form.model.value,
-            pricePerHour: Number(form.price.value), // per hour
+            pricePerHour: Number(form.price.value),
             type: form.category.value,
             description: form.description.value,
-            image: "https://placehold.co/300x200?text=Tractor" // Placeholder
+            image: imageUrl
         };
         await addEquipment(equipData, userProfile);
         setShowAddEquip(false);
+        setEquipImageFile(null);
+        setEquipImagePreview(null);
+        setUploading(false);
         fetchData();
+    };
+
+    const handleFileSelect = (file, setFile, setPreview) => {
+        if (!file) return;
+        setFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result);
+        reader.readAsDataURL(file);
     };
 
     if (!userProfile?.roles?.isFarmer) return <div className="p-8">Access Denied. Farmer role required.</div>;
@@ -115,6 +159,31 @@ const FarmerDashboard = () => {
                             <div className="mb-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)]">
                                 <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6">New Listing Details</h3>
                                 <form onSubmit={handleAddCropSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Image Upload */}
+                                    <div className="md:col-span-2">
+                                        <input 
+                                            ref={cropFileRef}
+                                            type="file" 
+                                            accept="image/*" 
+                                            capture="environment"
+                                            className="hidden" 
+                                            onChange={(e) => handleFileSelect(e.target.files[0], setCropImageFile, setCropImagePreview)} 
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => cropFileRef.current?.click()}
+                                            className="w-full h-40 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors overflow-hidden"
+                                        >
+                                            {cropImagePreview ? (
+                                                <img src={cropImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <>
+                                                    <Camera size={28} className="mb-2" />
+                                                    <span className="text-sm font-medium">Tap to add photo</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                     <input name="name" placeholder="Crop Name" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
                                     <input name="price" placeholder="Price (₹)" type="number" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
                                     <select name="category" className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium text-gray-500">
@@ -124,7 +193,9 @@ const FarmerDashboard = () => {
                                     </select>
                                     <input name="quantity" placeholder="Quantity Available" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
                                     <textarea name="description" placeholder="Description" className="md:col-span-2 p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" rows="2"></textarea>
-                                    <button type="submit" className="md:col-span-2 bg-green-600 text-white p-4 rounded-full hover:bg-green-700 tracking-wide mt-2">Publish Crop</button>
+                                    <button type="submit" disabled={uploading} className="md:col-span-2 bg-green-600 text-white p-4 rounded-full hover:bg-green-700 tracking-wide mt-2 flex items-center justify-center gap-2 disabled:opacity-60">
+                                        {uploading ? <><Loader2 size={18} className="animate-spin" /> Uploading...</> : 'Publish Crop'}
+                                    </button>
                                 </form>
                             </div>
                         )}
@@ -133,6 +204,11 @@ const FarmerDashboard = () => {
                             {myCrops.length === 0 && <p className="text-gray-400 text-sm italic col-span-full">No crops in your inventory.</p>}
                             {myCrops.map(crop => (
                                 <div key={crop.id} className="group bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all flex flex-col justify-between">
+                                    {crop.image && !crop.image.includes('placehold.co') && (
+                                        <div className="aspect-[5/3] rounded-2xl overflow-hidden mb-4 bg-gray-50 -mx-2 -mt-2">
+                                            <img src={crop.image} alt={crop.name} className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-start mb-6">
                                         <div>
                                             <h3 className=" text-2xl tracking-tight text-gray-900 mb-1">{crop.name}</h3>
@@ -174,6 +250,31 @@ const FarmerDashboard = () => {
                             <div className="mb-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)]">
                                 <h3 className="text-xs  uppercase tracking-widest text-gray-400 mb-6">New Equipment Outline</h3>
                                 <form onSubmit={handleAddEquipSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Image Upload */}
+                                    <div className="md:col-span-2">
+                                        <input 
+                                            ref={equipFileRef}
+                                            type="file" 
+                                            accept="image/*" 
+                                            capture="environment"
+                                            className="hidden" 
+                                            onChange={(e) => handleFileSelect(e.target.files[0], setEquipImageFile, setEquipImagePreview)} 
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => equipFileRef.current?.click()}
+                                            className="w-full h-40 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors overflow-hidden"
+                                        >
+                                            {equipImagePreview ? (
+                                                <img src={equipImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <>
+                                                    <Camera size={28} className="mb-2" />
+                                                    <span className="text-sm font-medium">Tap to add photo</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                     <input name="name" placeholder="Equipment Name" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
                                     <input name="model" placeholder="Model (e.g. Mahindra 265 DI)" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
                                     <input name="price" placeholder="Price per Hour (₹)" type="number" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
@@ -186,7 +287,9 @@ const FarmerDashboard = () => {
                                         <option value="Other">Other</option>
                                     </select>
                                     <textarea name="description" placeholder="Description" className="md:col-span-2 p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" rows="2"></textarea>
-                                    <button type="submit" className="md:col-span-2 bg-green-600 text-white p-4 rounded-full hover:bg-green-700 font-bold tracking-wide mt-2">Publish Equipment</button>
+                                    <button type="submit" disabled={uploading} className="md:col-span-2 bg-green-600 text-white p-4 rounded-full hover:bg-green-700 font-bold tracking-wide mt-2 flex items-center justify-center gap-2 disabled:opacity-60">
+                                        {uploading ? <><Loader2 size={18} className="animate-spin" /> Uploading...</> : 'Publish Equipment'}
+                                    </button>
                                 </form>
                             </div>
                         )}
@@ -195,6 +298,11 @@ const FarmerDashboard = () => {
                             {myEquipment.length === 0 && <p className="text-gray-400 text-sm italic col-span-full">No active rentals listed.</p>}
                             {myEquipment.map(item => (
                                 <div key={item.id} className="group bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all flex flex-col justify-between">
+                                    {item.image && item.image !== 'https://placehold.co/300x200?text=Tractor' && item.image !== 'https://placehold.co/300x200?text=Equipment' && (
+                                        <div className="aspect-[5/3] rounded-2xl overflow-hidden mb-4 bg-gray-50">
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-start mb-6">
                                         <div>
                                             <h3 className="text-2xl tracking-tight text-gray-900 mb-1">{item.name}</h3>

@@ -1,18 +1,21 @@
 import AppRouter from "./routing/AppRouter";
 
 import { CartProvider } from "./context/CartContext";
-import { AuthProvider } from "./context/AuthContext";
 import { LocationProvider } from "./context/LocationContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { WishlistProvider } from "./context/WishlistContext";
 
 function App() {
   return (
-    <CartProvider>
-      <AuthProvider>
-        <LocationProvider>
-          <AppRouter />
-        </LocationProvider>
-      </AuthProvider>
-    </CartProvider>
+    <NotificationProvider>
+      <WishlistProvider>
+        <CartProvider>
+          <LocationProvider>
+            <AppRouter />
+          </LocationProvider>
+        </CartProvider>
+      </WishlistProvider>
+    </NotificationProvider>
   );
 }
 
