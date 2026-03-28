@@ -22,6 +22,7 @@ const Deliveries = lazy(() => import("../pages/Deliveries"));
 const FarmerDashboard = lazy(() => import("../pages/FarmerDashboard"));
 const ProductDetails = lazy(() => import("../pages/ProductDetails"));
 const Cart = lazy(() => import("../pages/Cart"));
+const DeliveryDetails = lazy(() => import("../pages/DeliveryDetails"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 // Protected Route Component
@@ -162,6 +163,17 @@ const AppRouter = () => {
                     <ProtectedRoute>
                         <RouteWithLayout>
                             <Deliveries />
+                        </RouteWithLayout>
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path={ROUTES.DELIVERY_DETAILS}
+                element={
+                    <ProtectedRoute>
+                        <RouteWithLayout>
+                            <DeliveryDetails />
                         </RouteWithLayout>
                     </ProtectedRoute>
                 }

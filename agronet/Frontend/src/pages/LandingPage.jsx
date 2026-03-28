@@ -67,10 +67,16 @@ const LandingPage = () => {
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                 >
                     <Link
-                        to={ROUTES.LOGIN}
-                        className="px-6 py-2.5 bg-white/90 backdrop-blur-md text-green-800 text-sm font-semibold rounded-full hover:bg-white hover:scale-105 transition-all shadow-lg"
+                        to="/auth/login"
+                        className="px-5 py-2 text-white text-sm font-semibold hover:text-green-200 transition-colors"
                     >
                         Log In
+                    </Link>
+                    <Link
+                        to="/auth/register"
+                        className="px-6 py-2.5 bg-white/90 backdrop-blur-md text-green-800 text-sm font-semibold rounded-full hover:bg-white hover:scale-105 transition-all shadow-lg ml-2"
+                    >
+                        Register
                     </Link>
                 </motion.div>
             </div>
@@ -87,9 +93,9 @@ const LandingPage = () => {
                     </p>
 
                     <div className="flex gap-6 flex-wrap justify-center">
-                        <button className="px-8 py-4 bg-green-700 text-white rounded-full font-bold text-lg hover:bg-green-800 hover:scale-105 transition-all shadow-xl">
+                        <Link to="/auth/register" className="px-8 py-4 bg-green-700 text-white rounded-full font-bold text-lg hover:bg-green-800 hover:scale-[1.02] transition-all shadow-xl inline-block text-center">
                             Get Started
-                        </button>
+                        </Link>
                         <button className="px-8 py-4 bg-green-100 text-green-800 rounded-full font-bold text-lg hover:bg-green-200 hover:scale-105 transition-all shadow-sm">
                             Learn More
                         </button>

@@ -72,8 +72,9 @@ const FarmerDashboard = () => {
         const form = e.target;
         const equipData = {
             name: form.name.value,
-            price: form.price.value, // per day
-            category: form.category.value,
+            model: form.model.value,
+            pricePerHour: Number(form.price.value), // per hour
+            type: form.category.value,
             description: form.description.value,
             image: "https://placehold.co/300x200?text=Tractor" // Placeholder
         };
@@ -85,129 +86,158 @@ const FarmerDashboard = () => {
     if (!userProfile?.roles?.isFarmer) return <div className="p-8">Access Denied. Farmer role required.</div>;
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800">Farmer Dashboard</h1>
-
-            <div className="flex gap-4 border-b border-gray-200">
-                <button onClick={() => setActiveTab('crops')} className={`pb-2 px-1 ${activeTab === 'crops' ? 'border-b-2 border-green-600 font-bold text-green-700' : 'text-gray-500'}`}>My Crops</button>
-                <button onClick={() => setActiveTab('equipment')} className={`pb-2 px-1 ${activeTab === 'equipment' ? 'border-b-2 border-green-600 font-bold text-green-700' : 'text-gray-500'}`}>My Equipment</button>
-                <button onClick={() => setActiveTab('sales')} className={`pb-2 px-1 ${activeTab === 'sales' ? 'border-b-2 border-green-600 font-bold text-green-700' : 'text-gray-500'}`}>Sales History</button>
+        <div className="bg-white min-h-screen text-black pb-32">
+            {/* Minimal Header */}
+            <div className="p-6 pt-10 border-b border-gray-100 px-8">
+                <h1 className="text-4xl font-black tracking-tight mb-1 text-green-700">Farmer Dashboard</h1>
+                <p className="text-gray-400 font-medium">Hello, {userProfile?.fullName}</p>
             </div>
 
-            {/* CROPS TAB */}
-            {activeTab === 'crops' && (
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Listed Crops</h2>
-                        <button onClick={() => setShowAddCrop(!showAddCrop)} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                            <Plus size={18} /> Add Crop
-                        </button>
-                    </div>
-
-                    {showAddCrop && (
-                        <div className="mb-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
-                            <h3 className="font-bold mb-4">New Crop Listing</h3>
-                            <form onSubmit={handleAddCropSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input name="name" placeholder="Crop Name" required className="p-2 border rounded" />
-                                <input name="price" placeholder="Price (₹)" type="number" required className="p-2 border rounded" />
-                                <select name="category" className="p-2 border rounded">
-                                    <option value="Vegetables">Vegetables</option>
-                                    <option value="Fruits">Fruits</option>
-                                    <option value="Grains">Grains</option>
-                                </select>
-                                <input name="quantity" placeholder="Quantity Available" required className="p-2 border rounded" />
-                                <textarea name="description" placeholder="Description" className="md:col-span-2 p-2 border rounded" rows="3"></textarea>
-                                <button type="submit" className="md:col-span-2 bg-green-600 text-white p-2 rounded hover:bg-green-700 font-bold">List Crop</button>
-                            </form>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {myCrops.length === 0 && <p className="text-gray-500 col-span-full">No crops listed yet.</p>}
-                        {myCrops.map(crop => (
-                            <div key={crop.id} className="bg-white p-4 rounded-xl shadow-sm border flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-bold text-lg">{crop.name}</h3>
-                                    <p className="text-gray-600 text-sm">₹{crop.price} - {crop.quantity}</p>
-                                    <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">{crop.category}</span>
-                                </div>
-                                <button onClick={() => handleDeleteCrop(crop.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-full">
-                                    <Trash2 size={18} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+            <div className="px-8 py-6">
+                {/* Clean Typography Tabs */}
+                <div className="flex gap-6 border-b border-gray-200 mb-8">
+                    <button onClick={() => setActiveTab('crops')} className={`pb-3 text-sm font-semibold tracking-wide transition-colors ${activeTab === 'crops' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-400 hover:text-gray-600'}`}>My Crops</button>
+                    <button onClick={() => setActiveTab('equipment')} className={`pb-3 text-sm font-semibold tracking-wide transition-colors ${activeTab === 'equipment' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-400 hover:text-gray-600'}`}>My Equipment</button>
+                    <button onClick={() => setActiveTab('sales')} className={`pb-3 text-sm font-semibold tracking-wide transition-colors ${activeTab === 'sales' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-400 hover:text-gray-600'}`}>Sales History</button>
                 </div>
-            )}
 
-            {/* EQUIPMENT TAB */}
-            {activeTab === 'equipment' && (
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">My Equipment</h2>
-                        <button onClick={() => setShowAddEquip(!showAddEquip)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                            <Plus size={18} /> List Equipment
-                        </button>
-                    </div>
-
-                    {showAddEquip && (
-                        <div className="mb-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
-                            <h3 className="font-bold mb-4">New Equipment Listing</h3>
-                            <form onSubmit={handleAddEquipSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input name="name" placeholder="Equipment Name" required className="p-2 border rounded" />
-                                <input name="price" placeholder="Price per Day (₹)" type="number" required className="p-2 border rounded" />
-                                <select name="category" className="p-2 border rounded">
-                                    <option value="Tractor">Tractor</option>
-                                    <option value="Harvester">Harvester</option>
-                                    <option value="Tools">Tools</option>
-                                </select>
-                                <textarea name="description" placeholder="Description" className="md:col-span-2 p-2 border rounded" rows="3"></textarea>
-                                <button type="submit" className="md:col-span-2 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold">List Equipment</button>
-                            </form>
+                {/* CROPS TAB */}
+                {activeTab === 'crops' && (
+                    <div className="space-y-8">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Available Inventory</h2>
+                            <button onClick={() => setShowAddCrop(!showAddCrop)} className="flex items-center gap-2 text-green-700 font-black text-sm hover:text-green-800 transition">
+                                <Plus size={16} /> ADD CROP
+                            </button>
                         </div>
-                    )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {myEquipment.length === 0 && <p className="text-gray-500 col-span-full">No equipment listed yet.</p>}
-                        {myEquipment.map(item => (
-                            <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-bold text-lg">{item.name}</h3>
-                                    <p className="text-gray-600 text-sm">₹{item.price} / day</p>
-                                    <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{item.category}</span>
-                                </div>
-                                <button onClick={() => handleDeleteEquipment(item.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-full">
-                                    <Trash2 size={18} />
-                                </button>
+                        {showAddCrop && (
+                            <div className="mb-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)]">
+                                <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6">New Listing Details</h3>
+                                <form onSubmit={handleAddCropSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <input name="name" placeholder="Crop Name" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
+                                    <input name="price" placeholder="Price (₹)" type="number" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
+                                    <select name="category" className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium text-gray-500">
+                                        <option value="Vegetables">Vegetables</option>
+                                        <option value="Fruits">Fruits</option>
+                                        <option value="Grains">Grains</option>
+                                    </select>
+                                    <input name="quantity" placeholder="Quantity Available" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
+                                    <textarea name="description" placeholder="Description" className="md:col-span-2 p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" rows="2"></textarea>
+                                    <button type="submit" className="md:col-span-2 bg-green-600 text-white p-4 rounded-full hover:bg-green-700 tracking-wide mt-2">Publish Crop</button>
+                                </form>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                        )}
 
-            {/* SALES TAB */}
-            {activeTab === 'sales' && (
-                <div>
-                    <h2 className="text-xl font-semibold mb-4">Sales History</h2>
-                    <div className="space-y-3">
-                        {sales.length === 0 && <p className="text-gray-500">No sales yet.</p>}
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {myCrops.length === 0 && <p className="text-gray-400 text-sm italic col-span-full">No crops in your inventory.</p>}
+                            {myCrops.map(crop => (
+                                <div key={crop.id} className="group bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all flex flex-col justify-between">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <h3 className=" text-2xl tracking-tight text-gray-900 mb-1">{crop.name}</h3>
+                                            <span className="text-[10px] uppercase tracking-widest text-green-700 bg-green-50 px-2 py-1 rounded inline-block">{crop.category}</span>
+                                        </div>
+                                        <button onClick={() => handleDeleteCrop(crop.id)} className="text-gray-300 hover:text-red-500 transition-colors">
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                    <div className="border-t border-gray-100 pt-4 mt-auto">
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Stock</p>
+                                                <p className="font-medium text-gray-800">{crop.quantity}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Price</p>
+                                                <p className="font-black text-1.6xl tracking-tight">₹{crop.price}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* EQUIPMENT TAB */}
+                {activeTab === 'equipment' && (
+                    <div className="space-y-8">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Listed Machinery</h2>
+                            <button onClick={() => setShowAddEquip(!showAddEquip)} className="flex items-center gap-2 text-green-700 font-black text-sm hover:text-green-800 transition">
+                                <Plus size={16} /> ADD EQUIPMENT
+                            </button>
+                        </div>
+
+                        {showAddEquip && (
+                            <div className="mb-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)]">
+                                <h3 className="text-xs  uppercase tracking-widest text-gray-400 mb-6">New Equipment Outline</h3>
+                                <form onSubmit={handleAddEquipSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <input name="name" placeholder="Equipment Name" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
+                                    <input name="model" placeholder="Model (e.g. Mahindra 265 DI)" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
+                                    <input name="price" placeholder="Price per Hour (₹)" type="number" required className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" />
+                                    <select name="category" className="p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium text-gray-500">
+                                        <option value="Tractor">Tractor</option>
+                                        <option value="Harvester">Harvester</option>
+                                        <option value="Sprayer">Sprayer</option>
+                                        <option value="Drone">Drone</option>
+                                        <option value="Tools">Tools</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <textarea name="description" placeholder="Description" className="md:col-span-2 p-3 bg-transparent border-b border-gray-200 focus:border-green-600 outline-none transition text-lg font-medium" rows="2"></textarea>
+                                    <button type="submit" className="md:col-span-2 bg-green-600 text-white p-4 rounded-full hover:bg-green-700 font-bold tracking-wide mt-2">Publish Equipment</button>
+                                </form>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {myEquipment.length === 0 && <p className="text-gray-400 text-sm italic col-span-full">No active rentals listed.</p>}
+                            {myEquipment.map(item => (
+                                <div key={item.id} className="group bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all flex flex-col justify-between">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <h3 className="text-2xl tracking-tight text-gray-900 mb-1">{item.name}</h3>
+                                            <p className="text-gray-400 font-medium text-sm mb-2">{item.model || 'N/A'}</p>
+                                            <span className="text-[10px] uppercase tracking-widest text-green-700 bg-green-50 px-2 py-1 rounded inline-block">{item.type}</span>
+                                        </div>
+                                        <button onClick={() => handleDeleteEquipment(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                    <div className="border-t border-gray-100 pt-4 mt-auto text-right">
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Hourly Rate</p>
+                                        <p className="font-black text-xl tracking-tight">₹{item.pricePerHour} <span className="text-sm font-medium text-gray-400">/hr</span></p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* SALES TAB */}
+                {activeTab === 'sales' && (
+                    <div className="space-y-6 max-w-2xl">
+                        <h2 className="text-xs uppercase tracking-widest text-gray-400 mb-6">Sales Ledger</h2>
+                        {sales.length === 0 && <p className="text-gray-400 text-sm italic">No verified sales histories yet.</p>}
                         {sales.map(sale => (
-                            <div key={sale.id} className="bg-white p-4 rounded-xl border shadow-sm flex justify-between items-center">
+                            <div key={sale.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.01)] flex justify-between items-center group cursor-default">
                                 <div>
-                                    <p className="font-bold">{sale.itemName}</p>
-                                    <p className="text-sm text-gray-500">Sold to: {sale.buyerId}</p>
-                                    <p className="text-xs text-gray-400">{new Date(sale.createdAt?.seconds * 1000).toLocaleDateString()}</p>
+                                    <h3 className="font-semibold text-lg text-gray-900 group-hover:text-black transition-colors">{sale.itemName}</h3>
+                                    <p className="text-xs font-medium text-gray-400 mt-1">Order #{sale.id.slice(-6).toUpperCase()}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-bold text-green-700">₹{sale.totalAmount}</p>
-                                    <span className={`text-xs px-2 py-1 rounded font-bold ${sale.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{sale.status}</span>
+                                    <p className="font-black text-xl tracking-tight text-gray-900 mb-1">₹{sale.totalAmount}</p>
+                                    <span className="text-[10px] uppercase tracking-widest text-green-700 bg-green-50 px-2 py-1 rounded inline-block">
+                                        {sale.status}
+                                    </span>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                )}
 
+            </div>
         </div>
     );
 };

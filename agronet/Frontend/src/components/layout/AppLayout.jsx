@@ -67,7 +67,6 @@ const AppLayout = ({ children }) => {
     const location = useLocation();
 
     const isActive = (path) => location.pathname === path;
-    const shouldHideHeader = location.pathname === ROUTES.LANDING || location.pathname === ROUTES.RENTALS || location.pathname === ROUTES.MAPS || location.pathname === ROUTES.CHAT || location.pathname === ROUTES.HOME;
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans text-gray-800 flex">
@@ -128,28 +127,6 @@ const AppLayout = ({ children }) => {
             <div className="flex-1 flex flex-col min-w-0">
 
 
-
-                {/* --- Desktop Header --- */}
-                {!shouldHideHeader && (
-                    <header className="hidden md:flex justify-between items-center bg-white sticky top-0 z-20">
-                        <div className="flex-1 max-w-2xl">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="search"
-                                    className="w-full bg-white border border-gray-200 py-2.5 pl-10 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-                                />
-                                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-6 ml-4">
-                            <Link to={ROUTES.CART} className="text-gray-600 hover:text-green-700">
-                                <ShoppingBag size={22} />
-                            </Link>
-                            <button className="text-gray-600 hover:text-green-700"><User size={22} /></button>
-                        </div>
-                    </header>
-                )}
 
                 {/* --- Main Content --- */}
                 <main className="grow    overflow-y-auto">

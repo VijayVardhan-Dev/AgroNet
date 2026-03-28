@@ -4,12 +4,16 @@ import { geohashForLocation } from 'geofire-common';
 
 const COLLECTION_NAME = "deliveries";
 
-export const createDelivery = async (orderId, pickup, drop) => {
+export const createDelivery = async (orderId, pickup, drop, buyerName, fare, itemsSummary, otp) => {
     try {
         await addDoc(collection(db, COLLECTION_NAME), {
             orderId,
             pickupLocation: pickup,
             dropLocation: drop,
+            buyerName: buyerName || "Unknown Buyer",
+            fare: fare || 0,
+            itemsSummary: itemsSummary || "",
+            otp: otp,
             driverId: null,
             status: "SEARCHING_DRIVER",
             createdAt: new Date()
@@ -50,12 +54,52 @@ export const getAvailableDeliveries = async () => {
 
 export const getMyDeliveries = async (driverId) => {
     try {
-        const q = query(collection(db, COLLECTION_NAME), where("driverId", "==", driverId));
+        const q = query(collection(db, COLLECTION_NAME), where("driverId", "==", driverId), where("status", "in", ["ASSIGNED", "PICKED_UP"]));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error getting my deliveries:", error);
         return [];
+    }
+};
+
+export const getDeliveryHistory = async (driverId) => {
+    try {
+        const q = query(collection(db, COLLECTION_NAME), where("driverId", "==", driverId), where("status", "==", "DELIVERED"));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error getting delivery history:", error);
+        return [];
+    }
+};
+
+export const getDeliveryByOrderId = async (orderId) => {
+    try {
+        const q = query(collection(db, COLLECTION_NAME), where("orderId", "==", orderId));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            return { id: doc.id, ...doc.data() };
+        }
+        return null;
+    } catch (error) {
+        console.error("Error getting delivery by order ID:", error);
+        return null;
+    }
+};
+
+export const getDeliveryById = async (deliveryId) => {
+    try {
+        const dRef = doc(db, COLLECTION_NAME, deliveryId);
+        const dSnap = await getDoc(dRef);
+        if (dSnap.exists()) {
+            return { id: dSnap.id, ...dSnap.data() };
+        }
+        return null;
+    } catch (error) {
+        console.error("Error getting delivery by ID:", error);
+        return null;
     }
 };
 
@@ -96,6 +140,34 @@ export const updateDeliveryStatus = async (deliveryId, status) => {
     } catch (error) {
         console.error("Error updating delivery status:", error);
         throw error;
+    }
+};
+
+export const verifyDeliveryOtp = async (deliveryId, inputOtp) => {
+    const deliveryRef = doc(db, COLLECTION_NAME, deliveryId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const deliveryDoc = await transaction.get(deliveryRef);
+            if (!deliveryDoc.exists()) {
+                throw new Error("Delivery does not exist!");
+            }
+
+            const data = deliveryDoc.data();
+
+            if (data.otp !== inputOtp) {
+                throw new Error("Invalid OTP!");
+            }
+
+            transaction.update(deliveryRef, {
+                status: "DELIVERED",
+                deliveredAt: new Date()
+            });
+        });
+        return true;
+    } catch (error) {
+        console.error("OTP verification failed: ", error);
+        throw error; // Will be caught by frontend
     }
 };
 

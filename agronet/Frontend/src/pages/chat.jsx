@@ -37,30 +37,36 @@ const Chat = () => {
             // Using the requested model: gemma-3-27b-it
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key=${API_KEY}`;
 
-            // Prepare history for the API
+            // System instruction
+            const systemPrompt = "System Instruction: You are an agricultural expert AI. Provide SHORT, SIMPLE, and WELL-STRUCTURED answers. Use bullet points and bold text for readability. Avoid long paragraphs.\n\nUser Input: ";
 
-            // System instruction for brevity
-            const systemInstruction = {
-                role: 'user', // Gemma API treats "user" prompts as instructions efficiently
-                parts: [{ text: "You are an agricultural expert AI. Provide SHORT, SIMPLE, and WELL-STRUCTURED answers. Use bullet points and bold text for readability. Avoid long paragraphs." }]
-            };
+            const contents = [];
 
-            const contents = [systemInstruction];
+            // 1. Skip the initial dashboard welcome message (API requires starting with 'user')
+            const historyVars = messages.filter((m, i) => !(i === 0 && m.role === 'model'));
 
-            // Append history
-            messages
-                .filter(m => m.content) // details
-                .forEach(m => {
-                    contents.push({
-                        role: m.role === 'assistant' ? 'model' : m.role,
-                        parts: [{ text: m.content }]
-                    });
+            // 2. Build history, ensuring perfectly alternating user/model
+            historyVars.forEach((m, i) => {
+                let textContent = m.content;
+                // Prepend system prompt to the very first user message to guarantee instructions are processed
+                if (i === 0 && m.role === 'user') {
+                    textContent = systemPrompt + textContent;
+                }
+                contents.push({
+                    role: m.role === 'assistant' ? 'model' : m.role,
+                    parts: [{ text: textContent }]
                 });
+            });
 
-            // Add current new message
+            // 3. Add the current message
+            let currentText = userMessage.content;
+            if (historyVars.length === 0) {
+                // If it's the very first interaction, prepend system prompt here
+                currentText = systemPrompt + currentText;
+            }
             contents.push({
                 role: 'user',
-                parts: [{ text: userMessage.content }]
+                parts: [{ text: currentText }]
             });
 
             const response = await fetch(API_URL, {
@@ -93,12 +99,12 @@ const Chat = () => {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-120px)]  rounded-2xl overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-80px)] md:h-screen w-full bg-white pb-6 px-4 md:px-8 max-w-5xl mx-auto">
 
    
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 ">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {messages.map((msg, index) => (
                     <div
                         key={index}
@@ -133,7 +139,7 @@ const Chat = () => {
             </div>
 
             {/* Input Area */}
-            <div className="p-4">
+            <div className="pt-2">
                 <form onSubmit={handleSend} className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-full border border-gray-200 focus-within:ring-2 focus-within:ring-green-500/20 focus-within:border-green-500 transition-all">
                     <input
                         type="text"

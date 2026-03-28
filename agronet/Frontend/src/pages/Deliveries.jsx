@@ -1,42 +1,33 @@
-
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { subscribeToAvailableDeliveries, getMyDeliveries, acceptDelivery, updateDeliveryStatus } from '../services/deliveryService';
-import { MapPin, Navigation, Package, X } from 'lucide-react';
-import { useUserLocation } from '../context/LocationContext';
-import { distanceBetween } from 'geofire-common';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-// Fix Leaflet icon
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+import { 
+    subscribeToAvailableDeliveries, 
+    getMyDeliveries, 
+    updateDeliveryStatus,
+    getDeliveryHistory
+} from '../services/deliveryService';
+import { MapPin, Navigation, Clock, RefreshCw, CheckCircle } from 'lucide-react';
 
 const Deliveries = () => {
     const { user, userProfile } = useAuth();
+    const navigate = useNavigate();
+    
     const [available, setAvailable] = useState([]);
     const [myDeliveries, setMyDeliveries] = useState([]);
-    const { location } = useUserLocation();
-    const [selectedJob, setSelectedJob] = useState(null); // For Map Modal
+    const [history, setHistory] = useState([]);
+    
+    const [activeTab, setActiveTab] = useState('active'); // 'active' or 'history'
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         let unsubscribe;
 
         if (userProfile?.roles?.isDriver) {
-            // Initial fetch of my deliveries
             fetchMyDeliveries();
+            fetchHistory();
 
-            // Real-time subscription for available jobs
             unsubscribe = subscribeToAvailableDeliveries((deliveries) => {
-                // Optional: Filter by location radius here if needed on frontend too
                 setAvailable(deliveries);
             });
         }
@@ -51,17 +42,15 @@ const Deliveries = () => {
         setMyDeliveries(mine);
     };
 
-    const handleAccept = async (id) => {
-        try {
-            await acceptDelivery(id, user.uid);
-            alert("Success! You got the job.");
-            // Refresh my deliveries list
-            fetchMyDeliveries();
-            // Available list updates automatically via subscription
-            setSelectedJob(null);
-        } catch (error) {
-            alert("Failed: " + error.message);
-        }
+    const fetchHistory = async () => {
+        const hist = await getDeliveryHistory(user.uid);
+        setHistory(hist.sort((a,b) => b.deliveredAt - a.deliveredAt));
+    };
+
+    const handleRefreshAvailable = async () => {
+        setIsRefreshing(true);
+        await new Promise(r => setTimeout(r, 600)); 
+        setIsRefreshing(false);
     };
 
     const handleUpdateStatus = async (id, status) => {
@@ -69,178 +58,147 @@ const Deliveries = () => {
         fetchMyDeliveries();
     };
 
-    const calculateDistance = (target) => {
-        if (!location || !target) return "N/A";
-        const distInKm = distanceBetween([location.lat, location.lng], [target.lat, target.lng]);
-        return distInKm.toFixed(1) + " km";
-    };
-
     if (!userProfile?.roles?.isDriver) {
-        return <div className="p-4">You are not registered as a driver.</div>;
+        return <div className="p-8 text-center text-gray-500 font-mono text-sm uppercase tracking-widest">Unauthorized Access</div>;
     }
 
     return (
-        <div className="p-4 space-y-6 relative">
-            <h1 className="text-2xl font-bold">Driver Dashboard</h1>
-
-            {/* Active Deliveries Section */}
-            <div>
-                <h2 className="text-xl font-semibold mb-2">My Active Deliveries</h2>
-                {/* ... (Existing My Deliveries UI kept simple for now) ... */}
-                {myDeliveries.length === 0 ? <p className="text-gray-500">No active deliveries.</p> : (
-                    <div className="space-y-4">
-                        {myDeliveries.map(d => (
-                            <div key={d.id} className="bg-green-50 p-4 rounded-xl shadow-sm border border-green-200">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="font-bold">Delivery #{d.id.slice(0, 5)}</p>
-                                        <p className="text-sm font-semibold text-green-700">Status: {d.status}</p>
-                                        <div className="mt-2 text-sm">
-                                            <p><span className="font-medium">Pick:</span> {d.pickupLocation?.address}</p>
-                                            <p><span className="font-medium">Drop:</span> {d.dropLocation?.address}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        {d.status === 'ASSIGNED' && <button onClick={() => handleUpdateStatus(d.id, 'PICKED_UP')} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Picked Up</button>}
-                                        {d.status === 'PICKED_UP' && <button onClick={() => handleUpdateStatus(d.id, 'DELIVERED')} className="bg-green-600 text-white px-3 py-1 rounded text-sm">Delivered</button>}
-                                        <button onClick={() => setSelectedJob(d)} className="text-blue-600 text-xs underline">View Map</button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+        <div className="bg-white min-h-screen text-black pb-32">
+            {/* Minimal Header */}
+            <div className="p-6 pt-10 border-b border-gray-100">
+                <h1 className="text-4xl font-black tracking-tight mb-1 text-green-700">Driver Dashboard</h1>
+                <p className="text-gray-400 font-medium">Hello, {userProfile?.fullName}</p>
             </div>
 
-            {/* Available Jobs Section */}
-            <div>
-                <h2 className="text-xl font-semibold mb-2">Available Jobs</h2>
-                {available.length === 0 ? <p className="text-gray-500">No jobs available nearby.</p> : (
+            <div className="px-6 py-6">
+                {/* Clean Typography Tabs */}
+                <div className="flex gap-6 border-b border-gray-200 mb-8">
+                    <button 
+                        onClick={() => setActiveTab('active')} 
+                        className={`pb-3 text-sm font-semibold tracking-wide transition-colors ${activeTab === 'active' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        Active Jobs
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('history')} 
+                        className={`pb-3 text-sm font-semibold tracking-wide transition-colors ${activeTab === 'history' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        History
+                    </button>
+                </div>
+
+                {activeTab === 'active' && (
+                    <div className="space-y-12">
+                        {/* Available Jobs */}
+                        <section>
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Available Nearby</h2>
+                                <button onClick={handleRefreshAvailable} className="text-gray-400 hover:text-black transition">
+                                    <RefreshCw size={16} className={isRefreshing ? "animate-spin text-black" : ""} />
+                                </button>
+                            </div>
+
+                            {available.length === 0 ? (
+                                <div className="py-12 text-center">
+                                    <Clock className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+                                    <p className="text-gray-400 font-medium text-sm">Searching for requests</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {available.map(d => (
+                                        <div 
+                                            key={d.id} 
+                                            onClick={() => navigate(`/deliveries/${d.id}`)}
+                                            className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-all cursor-pointer flex justify-between items-center"
+                                        >
+                                            <div>
+                                                <h3 className="font-semibold text-lg text-gray-900 group-hover:text-black transition-colors">{d.buyerName}</h3>
+                                                <p className="text-xs font-medium text-gray-400 mt-1 line-clamp-1 max-w-[200px]">{d.pickupLocation?.address.split(',')[0]} → {d.dropLocation?.address.split(',')[0]}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-black text-xl tracking-tight">₹{d.fare}</p>
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1 flex items-center justify-end gap-1">
+                                                    View <span className="text-black font-black">→</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+
+                        {/* My Assigned Jobs */}
+                        <section>
+                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">In Progress</h2>
+                            {myDeliveries.length === 0 ? (
+                                <p className="text-gray-400 text-sm italic">Nothing in progress.</p>
+                            ) : (
+                                <div className="space-y-4">
+                                    {myDeliveries.map(d => (
+                                        <div key={d.id} className="bg-gray-50 p-5 border border-gray-100 rounded-2xl relative overflow-hidden">
+                                            {/* Status indicator line */}
+                                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${d.status === 'ASSIGNED' ? 'bg-green-600' : 'bg-gray-300'}`}></div>
+
+                                            <div className="flex justify-between items-start mb-6 pl-2">
+                                                <div>
+                                                    <h3 className="font-semibold text-lg">{d.buyerName}</h3>
+                                                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mt-1">
+                                                        {d.status === 'ASSIGNED' ? 'Pending Pickup' : 'In Transit'}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-black text-xl">₹{d.fare}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex gap-3 pl-2">
+                                                <button
+                                                    onClick={() => navigate(`/deliveries/${d.id}`)}
+                                                    className="flex-1 bg-white border border-gray-200 text-black py-3 rounded-xl font-semibold text-sm hover:bg-gray-100 transition"
+                                                >
+                                                    View Details
+                                                </button>
+                                                
+                                                {d.status === 'ASSIGNED' && (
+                                                    <button 
+                                                        onClick={() => handleUpdateStatus(d.id, 'PICKED_UP')} 
+                                                        className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-green-700 transition"
+                                                    >
+                                                        Pick Up
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+                    </div>
+                )}
+
+                {activeTab === 'history' && (
                     <div className="space-y-4">
-                        {available.map(d => (
-                            <div key={d.id} className="bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex flex-col gap-3">
-                                <div className="flex justify-between items-start">
+                        {history.length === 0 ? (
+                            <div className="py-12 text-center">
+                                <CheckCircle className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+                                <p className="text-gray-400 font-medium text-sm">No completed deliveries.</p>
+                            </div>
+                        ) : (
+                            history.map(d => (
+                                <div key={d.id} className="py-4 border-b border-gray-100 flex justify-between items-center group cursor-default">
                                     <div>
-                                        <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">NEW REQUEST</span>
-                                        <p className="font-bold mt-1 text-lg">Order #{d.orderId?.slice(-6) || '...'}</p>
+                                        <p className="font-semibold text-gray-900">{d.buyerName}</p>
+                                        <p className="text-xs font-mono text-gray-400 mt-1">{new Date(d.deliveredAt?.seconds * 1000).toLocaleDateString()}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold text-gray-800">{calculateDistance(d.pickupLocation)} away</p>
-                                        <p className="text-xs text-gray-500">to pickup</p>
+                                        <p className="font-black text-lg">₹{d.fare}</p>
                                     </div>
                                 </div>
-
-                                <div className="space-y-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                                    <div className="flex gap-2">
-                                        <MapPin size={16} className="text-green-600 shrink-0" />
-                                        <div>
-                                            <p className="font-bold text-gray-900">Pickup</p>
-                                            <p>{d.pickupLocation?.address || "Unknown"}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Navigation size={16} className="text-blue-600 shrink-0" />
-                                        <div>
-                                            <p className="font-bold text-gray-900">Dropoff</p>
-                                            <p>{d.dropLocation?.address || "Unknown"}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-2 mt-2">
-                                    <button
-                                        onClick={() => setSelectedJob(d)}
-                                        className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-50"
-                                    >
-                                        View Map
-                                    </button>
-                                    <button
-                                        onClick={() => handleAccept(d.id)}
-                                        className="flex-1 bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 shadow-lg shadow-green-100"
-                                    >
-                                        Accept Job
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 )}
             </div>
-
-            {/* Map Modal */}
-            {selectedJob && (
-                <div className="fixed inset-0 z-1000 bg-black/60 flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-                        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-                            <h3 className="font-bold text-lg">Route Details</h3>
-                            <button onClick={() => setSelectedJob(null)} className="p-1 hover:bg-gray-200 rounded-full">
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        <div className="h-96 w-full relative">
-                            {location && selectedJob.pickupLocation && (
-                                <MapContainer
-                                    bounds={[
-                                        [location.lat, location.lng],
-                                        [selectedJob.pickupLocation.lat, selectedJob.pickupLocation.lng],
-                                        [selectedJob.dropLocation.lat, selectedJob.dropLocation.lng]
-                                    ]}
-                                    boundsOptions={{ padding: [50, 50] }}
-                                    style={{ height: "100%", width: "100%" }}
-                                >
-                                    <TileLayer
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                    />
-
-                                    {/* Driver Location */}
-                                    <Marker position={[location.lat, location.lng]}>
-                                        <Popup>You (Driver)</Popup>
-                                    </Marker>
-
-                                    {/* Pickup Location */}
-                                    <Marker position={[selectedJob.pickupLocation.lat, selectedJob.pickupLocation.lng]}>
-                                        <Popup>Pickup: {selectedJob.pickupLocation.address}</Popup>
-                                    </Marker>
-
-                                    {/* Drop Location */}
-                                    <Marker position={[selectedJob.dropLocation.lat, selectedJob.dropLocation.lng]}>
-                                        <Popup>Drop: {selectedJob.dropLocation.address}</Popup>
-                                    </Marker>
-                                </MapContainer>
-                            )}
-                            {!location && <div className="flex items-center justify-center h-full text-gray-500">Location not available</div>}
-                        </div>
-
-                        <div className="p-4 bg-white border-t">
-                            <div className="flex justify-between items-center mb-4 text-sm">
-                                <div className="text-center flex-1">
-                                    <p className="text-gray-500">Distance to Pickup</p>
-                                    <p className="font-bold text-lg">{calculateDistance(selectedJob.pickupLocation)}</p>
-                                </div>
-                                <div className="text-center flex-1 border-l">
-                                    <p className="text-gray-500">Total Trip</p>
-                                    <p className="font-bold text-lg">
-                                        {distanceBetween(
-                                            [selectedJob.pickupLocation.lat, selectedJob.pickupLocation.lng],
-                                            [selectedJob.dropLocation.lat, selectedJob.dropLocation.lng]
-                                        ).toFixed(1)} km
-                                    </p>
-                                </div>
-                            </div>
-                            {selectedJob.status === 'SEARCHING_DRIVER' && (
-                                <button
-                                    onClick={() => handleAccept(selectedJob.id)}
-                                    className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700"
-                                >
-                                    Accept & Start
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

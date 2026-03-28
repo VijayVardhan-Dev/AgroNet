@@ -26,7 +26,7 @@ const Rentals = () => {
         ? equipmentList
         : equipmentList.filter(item => item.type === selectedCategory);
 
-    const categories = ['All', 'Tractor', 'Harvester', 'Sprayer', 'Drone', 'Other'];
+    const categories = ['All', 'Tractor', 'Harvester', 'Sprayer', 'Drone', 'Tools', 'Other'];
 
     const handleProductClick = (id) => {
         navigate(`/product/equipment/${id}`);
@@ -37,7 +37,7 @@ const Rentals = () => {
         addToCart({
             id: item.id,
             name: item.name,
-            price: item.pricePerHour, // Using pricePerHour as price for cart placeholder
+            price: item.pricePerHour, // Using item.pricePerHour for cart placeholder
             type: 'equipment',
             image: "https://placehold.co/100?text=Equip"
         });
