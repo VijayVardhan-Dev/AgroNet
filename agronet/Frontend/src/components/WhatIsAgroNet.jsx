@@ -65,21 +65,33 @@ export const WhatIsAgroNet = () => {
 
     const cards = [
         {
+            title: "Direct Market Access",
+            text: "Connect directly with buyers for fair pricing and eliminate middlemen.",
+            icon: "🌾",
             x: isMobile ? m0X : card0X,
             y: isMobile ? m0Y : card0Y,
             rotate: card0Rot, scale: card0Scale, aspectRatio: card0Aspect
         },
         {
+            title: "Smart Insights",
+            text: "Leverage real-time weather forecasts and expert guidance for optimal yield.",
+            icon: "🌦️",
             x: isMobile ? m1X : card1X,
             y: isMobile ? m1Y : card1Y,
             rotate: card1Rot, scale: card1Scale, aspectRatio: card1Aspect
         },
         {
+            title: "Gov & Subsidies",
+            text: "Stay updated with the latest government schemes, policies, and subsidies.",
+            icon: "📜",
             x: isMobile ? m2X : card2X,
             y: isMobile ? m2Y : card2Y,
             rotate: card2Rot, scale: card2Scale, aspectRatio: card2Aspect
         },
         {
+            title: "Community Hub",
+            text: "Connect with fellow farmers, rent equipment, and access transport.",
+            icon: "🤝",
             x: isMobile ? m3X : card3X,
             y: isMobile ? m3Y : card3Y,
             rotate: card3Rot, scale: card3Scale, aspectRatio: card3Aspect
@@ -124,9 +136,15 @@ export const WhatIsAgroNet = () => {
                                     scale: card.scale,
                                     aspectRatio: card.aspectRatio
                                 }}
-                                className={`absolute bg-gray-300 rounded-md shadow-2xl border border-gray-400/30 origin-center z-[${zIndexes[idx]}] pointer-events-auto w-[180px] md:w-[20vw] aspect-square`}
+                                className={`absolute bg-white rounded-2xl shadow-xl border border-gray-200 origin-center z-[${zIndexes[idx]}] pointer-events-auto w-[220px] md:w-[22vw] p-4 md:p-8 flex flex-col items-center justify-center text-center gap-2 overflow-hidden`}
                             >
-                                {/* Images will be inserted here later */}
+                                <div className="text-3xl md:text-5xl mb-2">{card.icon}</div>
+                                <h3 className="text-lg md:text-2xl font-bold text-green-900 leading-tight">
+                                    {card.title}
+                                </h3>
+                                <p className="text-xs md:text-base text-gray-600 font-medium">
+                                    {card.text}
+                                </p>
                             </motion.div>
                         );
                     })}
